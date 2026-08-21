@@ -1,102 +1,50 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+// app/page.tsx
+import { Metadata } from "next";
+import Navbar from "../components/custom-components/common/Navbar";
+import HeroSection from "../components/custom-components/sections/Hero";
+import FeatureSection from "../components/custom-components/sections/Feature";
+import Footer from "../components/custom-components/sections/Footer";
+import ProblemSection from "../components/custom-components/sections/Problem";
+import SystemSection from "../components/custom-components/sections/System";
+import GrowthEngineSection from "../components/custom-components/sections/GrowthEngine";
+import EcosystemSection from "../components/custom-components/sections/Ecosystem";
+import TransformationSection from "../components/custom-components/sections/Transformation";
+import CTASection from "../components/custom-components/sections/CTA";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
+export const metadata: Metadata = {
+  title: "Ascend | The Ultimate Discipline Engine",
+  description:
+    "Ascend is a unified productivity workspace that maps your daily execution to long-term data visualization. Build habits, track progress, and engineer focus.",
+  openGraph: {
+    title: "Ascend | Master Your Time",
+    description:
+      "Design your day with intelligent habit tracking and deep work timers.",
+    type: "website",
+  },
 };
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
+export default function LandingPage() {
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <div className="relative min-h-screen bg-[#02050A] text-slate-200 font-sans selection:bg-[#3399FF]/30 overflow-x-hidden">
+      {/* Deep Space / Ascent Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#001a33_0%,_#02050A_80%)] opacity-80" />
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.02] mix-blend-overlay" />
+      </div>
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      <Navbar />
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
+      <main className="relative z-10 flex flex-col items-center w-full">
+        <HeroSection />
+        <ProblemSection />
+        <SystemSection />
+        <GrowthEngineSection />
+        <EcosystemSection />
+        <TransformationSection />
+        <CTASection />
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
+
+      <Footer />
     </div>
   );
 }
