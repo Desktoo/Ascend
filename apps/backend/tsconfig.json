@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    // "paths": {
+    //   "@src/.": ["./src/*"],
+    //   "@day-mark/db": ["../../packages/core/db/src/index.ts"],
+    //   "@day-mark/db/types": ["../../packages/core/db/src/types/model-types.ts"],
+    //   "@day-mark/config": ["../../packages/core/config/src/index.ts"]
+    // },
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    // "ignoreDeprecations": "6.0"
+  }
+}
