@@ -11,6 +11,7 @@ interface UserProfile {
   level: number;
   hasSubmittedReflectionToday: boolean;
   hasPassword: boolean;
+  isOnboarded: boolean;
   timeZone: string;
   xp: number;
 }

@@ -88,6 +88,10 @@ export class AuthController {
 
         return profile;
       },
+      {
+        maxWait: 10000,
+        timeout: 10000,
+      },
     );
 
     const { access_token } = await this.authServices.login(
@@ -150,7 +154,7 @@ export class AuthController {
 
     await this.authServices.validateOrCreateOAuthUser(googleUser, response);
 
-    response.redirect(`http://localhost:3001/dashboard`);
+    response.redirect('http://localhost:3001/dashboard');
   }
 
   // GITHUB OAuth Handlers
@@ -170,7 +174,7 @@ export class AuthController {
 
     await this.authServices.validateOrCreateOAuthUser(githubUser, response);
 
-    response.redirect(`http://localhost:3001/dashboard`);
+    response.redirect('http://localhost:3001/dashboard');
   }
 
   @Post('logout')

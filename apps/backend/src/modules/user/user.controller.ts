@@ -21,6 +21,7 @@ import { SubmitSelfReflectionDto } from './dto/submit-reflection.dto';
 import { UserActivityService } from './repos/user-activity.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 
 @Controller('user')
 @UseGuards(AuthGaurd)
@@ -93,6 +94,21 @@ export class UserController {
 
     return {
       message: 'Password updated successfully.',
+    };
+  }
+
+  @Patch('onboarding')
+  async completeOnboarding(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CompleteOnboardingDto,
+  ) {
+    const user = await this.userService.completeOnboarding(
+      req.user.userId,
+      dto,
+    );
+    return {
+      success: true,
+      data: user,
     };
   }
 }

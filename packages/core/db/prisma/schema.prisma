@@ -14,6 +14,7 @@ model User {
   avatar_url          String?
   timeZone            String           @default("UTC")
   dayStartTime        String           @default("09:00")
+  isOnboarded         Boolean          @default(false)
 
   accounts            Account[]
 

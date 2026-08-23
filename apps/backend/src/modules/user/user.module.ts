@@ -9,6 +9,7 @@ import { DynamoDbService } from 'src/common/dynamo-db/dynamo-db.service';
 import { GamificationModule } from 'src/common/gamification/gamification.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { UserActivityService } from './repos/user-activity.service';
+import { UserCacheRepository } from './repos/user-cache.repo';
 
 @Module({
   imports: [PrismaModule, GamificationModule, forwardRef(() => TasksModule)],
@@ -19,6 +20,7 @@ import { UserActivityService } from './repos/user-activity.service';
     SelfReflectionService,
     DynamoDbService,
     UserActivityService,
+    UserCacheRepository,
   ],
   exports: [UserService],
   controllers: [UserController],

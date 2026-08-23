@@ -15,6 +15,12 @@ import { getUserLogicalDate } from 'src/common/utils/time.utils';
 import { DynamoDbService } from 'src/common/dynamo-db/dynamo-db.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { RedisCacheService } from 'src/common/redis-cache/redis-cache.service';
+import {
+  CachedCoreProfile,
+  UserCacheRepository,
+} from './repos/user-cache.repo';
 
 @Injectable()
 export class UserService {
@@ -22,6 +28,8 @@ export class UserService {
     private readonly prisma: PrismaService,
     private readonly gamificationCache: GamificationCacheRepository,
     private readonly dynamoDbService: DynamoDbService,
+    private readonly userCache: UserCacheRepository,
+    private readonly redis: RedisCacheService,
   ) {}
 
   async createUserProfile(
@@ -39,7 +47,7 @@ export class UserService {
       throw new ConflictException('User already exists');
     }
 
-    return tx.user.create({
+    const user = await tx.user.create({
       data: {
         email,
         userName,
@@ -57,6 +65,22 @@ export class UserService {
         notificationPreference: true,
       },
     });
+
+    const coreProfile = {
+      id: user.id,
+      email: user.email,
+      userName: user.userName,
+      timeZone: user.timeZone,
+      dayStartTime: user.dayStartTime,
+      avatarUrl: user.avatar_url,
+      isOnboarded: Boolean(user.isOnboarded),
+      hasPassword: false, // Always false at the exact moment of user creation
+    };
+
+    // Use the repository to handle string casting and TTL automatically
+    await this.userCache.setCoreProfile(user.id, coreProfile);
+
+    return user;
   }
 
   async linkAccount(
@@ -105,70 +129,92 @@ export class UserService {
   }
 
   async getUserProfile(userId: string) {
-    const cachedProfile = await this.gamificationCache.getFullHash(userId);
+    // 1. Fetch both caches concurrently
+    const [cachedProfile, cachedGamification] = await Promise.all([
+      this.userCache.getCoreProfile(userId),
+      this.gamificationCache.getFullHash(userId),
+    ]);
 
-    if (
-      cachedProfile &&
-      cachedProfile.xp &&
-      cachedProfile.level &&
-      cachedProfile.rank
-    ) {
-      const userDbBase = await this.prisma.client.user.findFirst({
-        where: {
-          id: userId,
-        },
-        include: {
-          accounts: {
-            select: {
-              provider: true,
-              password: true,
+    // Determine exactly what is missing
+    const needsCoreProfile = !cachedProfile;
+    const needsGamification = !cachedGamification || !cachedGamification.xp;
+
+    // 2. THE SENIOR MOVE: If either cache is missing, fetch the DB ONCE.
+    // By using a ternary operator with `const`, TypeScript perfectly infers
+    // the massive Prisma return type automatically.
+    const userDb =
+      needsCoreProfile || needsGamification
+        ? await this.prisma.client.user.findUnique({
+            where: { id: userId },
+            include: {
+              accounts: { select: { provider: true, password: true } },
             },
-          },
-        },
-      });
+          })
+        : null;
 
-      if (!userDbBase) return;
+    // Early exit if the user was deleted but cache somehow triggered this
+    if ((needsCoreProfile || needsGamification) && !userDb) return null;
 
-      const hasPassword = userDbBase.accounts.some(
+    // 3. Resolve Core Profile
+    let coreProfile: CachedCoreProfile;
+
+    if (cachedProfile) {
+      coreProfile = cachedProfile;
+    } else {
+      // We use the "!" non-null assertion because our check above guarantees userDb exists here
+      const hasPassword = userDb!.accounts.some(
         (acc) => acc.provider === 'CREDENTIALS' && Boolean(acc.password),
       );
 
-      const logicalDate = getUserLogicalDate(
-        userDbBase.timeZone,
-        userDbBase.dayStartTime,
-      );
-      const pk = `USER#${userId}`;
-      const skPrefix = `REFLECTION#${logicalDate}`;
-
-      const existingReflection = await this.dynamoDbService.queryByPrefix(
-        pk,
-        skPrefix,
-      );
-
-      return {
-        ...userDbBase,
-        logicalDate,
+      coreProfile = {
+        id: userDb!.id,
+        email: userDb!.email,
+        userName: userDb!.userName,
+        timeZone: userDb!.timeZone,
+        dayStartTime: userDb!.dayStartTime,
+        avatarUrl: userDb!.avatar_url,
+        isOnboarded: Boolean(userDb!.isOnboarded),
         hasPassword,
-        hasSubmittedReflectionToday: existingReflection.length > 0,
-        level: Number(cachedProfile.level),
-        xp: Number(cachedProfile.xp),
-        rank: cachedProfile.rank,
       };
+      await this.userCache.setCoreProfile(userId, coreProfile);
     }
 
-    const userDb = await this.prisma.client.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
+    // 4. Resolve Gamification Cache
+    let gamification = cachedGamification;
 
-    if (!userDb) return null;
+    if (needsGamification) {
+      gamification = {
+        level: String(userDb!.level),
+        xp: String(userDb!.xp),
+        rank: userDb!.rank,
+      };
+      await this.gamificationCache.setHashFields(userId, {
+        level: gamification.level,
+        xp: gamification.xp,
+        rank: gamification.rank,
+      });
+    }
 
-    await this.gamificationCache.setHashFields(userId, {
-      level: userDb.level,
-      xp: userDb.xp,
-      rank: userDb.rank,
-    });
+    // 5. Check DynamoDB for today's reflection
+    const logicalDate = getUserLogicalDate(
+      coreProfile.timeZone,
+      coreProfile.dayStartTime,
+    );
+
+    const existingReflection = await this.dynamoDbService.queryByPrefix(
+      `USER#${userId}`,
+      `REFLECTION#${logicalDate}`,
+    );
+
+    // 6. Merge and Return
+    return {
+      ...coreProfile,
+      logicalDate,
+      hasSubmittedReflectionToday: existingReflection.length > 0,
+      level: Number(gamification!.level),
+      xp: Number(gamification!.xp),
+      rank: gamification!.rank,
+    };
   }
 
   async updateUserTimeZone(userId: string, timeZone: string): Promise<void> {
@@ -334,5 +380,44 @@ export class UserService {
         'A structural error occurred while updating your password.',
       );
     }
+  }
+
+  async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
+    // 1. Check if username is already taken
+    const existingUser = await this.prisma.client.user.findUnique({
+      where: { userName: dto.userName },
+    });
+
+    if (existingUser && existingUser.id !== userId) {
+      throw new BadRequestException('Username is already taken');
+    }
+
+    // 2. Update the PostgreSQL Database
+    const updatedUser = await this.prisma.client.user.update({
+      where: { id: userId },
+      data: {
+        userName: dto.userName,
+        dayStartTime: dto.dayStartTime,
+        isOnboarded: true,
+      },
+    });
+
+    // 3. THE FIX: Update the Redis Cache (Write-Through)
+    const existingCache = await this.userCache.getCoreProfile(userId);
+    if (existingCache) {
+      // Merge the new onboarding data into the existing cached profile
+      await this.userCache.setCoreProfile(userId, {
+        ...existingCache,
+        userName: updatedUser.userName,
+        dayStartTime: updatedUser.dayStartTime,
+        isOnboarded: true,
+      });
+    } else {
+      // Failsafe: If the cache was missing for any reason, invalidate the key
+      // so the next request forces a fresh DB read instead of serving stale data.
+      await this.userCache.invalidateProfile(userId);
+    }
+
+    return updatedUser;
   }
 }

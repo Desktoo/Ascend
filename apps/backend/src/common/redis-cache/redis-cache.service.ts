@@ -20,7 +20,11 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.client = new Redis(env.UPSTASH_REDIS_URL, {
-      tls: env.NODE_ENV === 'production' ? {} : undefined,
+      family: 4,
+      tls: {
+        rejectUnauthorized: false,
+      },
+      // tls: env.NODE_ENV === 'production' ? {} : undefined,
       maxRetriesPerRequest: 10,
     });
 
@@ -61,6 +65,13 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
 
   async del(key: string): Promise<void> {
     await this.client.del(key);
+  }
+
+  // Inside RedisCacheService
+
+  async expire(key: string, seconds: number): Promise<void> {
+    // If using standard ioredis or upstash:
+    await this.client.expire(key, seconds);
   }
 
   // Generic Hash primitives

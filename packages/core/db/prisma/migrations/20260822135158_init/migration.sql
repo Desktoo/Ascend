@@ -5,10 +5,10 @@ CREATE TYPE "ThemePreference" AS ENUM ('GENERAL');
 CREATE TYPE "Provider" AS ENUM ('GOOGLE', 'GITHUB', 'CREDENTIALS');
 
 -- CreateEnum
-CREATE TYPE "GoalStatus" AS ENUM ('ACTIVE', 'COMPLETED', 'ABANDONED');
+CREATE TYPE "HorizonType" AS ENUM ('WEEKLY', 'MONTHLY');
 
 -- CreateEnum
-CREATE TYPE "HabitStatus" AS ENUM ('DONE', 'SKIPPED');
+CREATE TYPE "GoalStatus" AS ENUM ('ACTIVE', 'COMPLETED', 'SCHEDULED', 'ABANDONED');
 
 -- CreateEnum
 CREATE TYPE "TaskStatus" AS ENUM ('PENDING', 'DONE', 'ABANDONED');
@@ -25,11 +25,15 @@ CREATE TABLE "User" (
     "userName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "avatar_url" TEXT,
-    "timeZone" TEXT NOT NULL,
+    "timeZone" TEXT NOT NULL DEFAULT 'UTC',
+    "dayStartTime" TEXT NOT NULL DEFAULT '09:00',
+    "isOnboarded" BOOLEAN NOT NULL DEFAULT false,
     "rank" TEXT NOT NULL DEFAULT 'Beginner',
     "level" INTEGER NOT NULL DEFAULT 1,
     "xp" INTEGER NOT NULL DEFAULT 0,
     "theme" "ThemePreference" NOT NULL DEFAULT 'GENERAL',
+    "isAppPaused" BOOLEAN NOT NULL DEFAULT false,
+    "lastActive" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -49,28 +53,26 @@ CREATE TABLE "Account" (
 );
 
 -- CreateTable
-CREATE TABLE "PasswordReset" (
-    "id" TEXT NOT NULL,
-    "token" TEXT NOT NULL,
-    "expiresAt" TIMESTAMP(3) NOT NULL,
-    "used" BOOLEAN NOT NULL DEFAULT false,
-    "userId" TEXT NOT NULL,
-
-    CONSTRAINT "PasswordReset_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Goal" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "taskTitle" TEXT NOT NULL,
     "description" TEXT,
+    "rewardText" TEXT,
+    "timeFrame" "HorizonType" NOT NULL,
+    "weekendsExcluded" BOOLEAN NOT NULL,
+    "configeDaysPerWeek" INTEGER NOT NULL DEFAULT 5,
+    "monthlyWeekSprints" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "status" "GoalStatus" NOT NULL DEFAULT 'ACTIVE',
+    "targetDays" INTEGER NOT NULL,
+    "completedDays" INTEGER NOT NULL DEFAULT 0,
+    "daysSkipped" INTEGER NOT NULL DEFAULT 0,
     "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "durationDays" INTEGER NOT NULL,
-    "deadline" TIMESTAMP(3) NOT NULL,
+    "currentProgress" INTEGER NOT NULL DEFAULT 0,
+    "currentVelocity" INTEGER NOT NULL DEFAULT 100,
+    "totalActiveDays" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedTime" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Goal_pkey" PRIMARY KEY ("id")
 );
@@ -116,7 +118,9 @@ CREATE TABLE "Task" (
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'PENDING',
     "priority" "PriorityLevel" NOT NULL DEFAULT 'MEDIUM',
-    "dueTime" TIMESTAMP(3),
+    "scheduledDate" TEXT NOT NULL DEFAULT '',
+    "dueTime" TIMESTAMPTZ,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -132,14 +136,36 @@ CREATE TABLE "XpTransaction" (
     CONSTRAINT "XpTransaction_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "NotificationPreference" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "webPushEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "masterNotification" BOOLEAN NOT NULL DEFAULT true,
+    "midDayReminder" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "NotificationPreference_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PushSubscription" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "endpoint" TEXT NOT NULL,
+    "p256dh" TEXT NOT NULL,
+    "auth" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PushSubscription_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_userName_key" ON "User"("userName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "PasswordReset_token_key" ON "PasswordReset"("token");
 
 -- CreateIndex
 CREATE INDEX "Goal_userId_idx" ON "Goal"("userId");
@@ -157,7 +183,7 @@ CREATE INDEX "HabitMonthlyLogs_yearMonth_idx" ON "HabitMonthlyLogs"("yearMonth")
 CREATE UNIQUE INDEX "HabitMonthlyLogs_habitId_yearMonth_key" ON "HabitMonthlyLogs"("habitId", "yearMonth");
 
 -- CreateIndex
-CREATE INDEX "Task_userId_idx" ON "Task"("userId");
+CREATE INDEX "Task_userId_scheduledDate_idx" ON "Task"("userId", "scheduledDate");
 
 -- CreateIndex
 CREATE INDEX "Task_id_userId_idx" ON "Task"("id", "userId");
@@ -168,11 +194,17 @@ CREATE INDEX "Task_goalId_idx" ON "Task"("goalId");
 -- CreateIndex
 CREATE INDEX "Task_habitId_idx" ON "Task"("habitId");
 
--- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "Task_habitId_scheduledDate_key" ON "Task"("habitId", "scheduledDate");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NotificationPreference_userId_key" ON "NotificationPreference"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PushSubscription_endpoint_key" ON "PushSubscription"("endpoint");
 
 -- AddForeignKey
-ALTER TABLE "PasswordReset" ADD CONSTRAINT "PasswordReset_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Goal" ADD CONSTRAINT "Goal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -197,3 +229,9 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_habitId_fkey" FOREIGN KEY ("habitId") RE
 
 -- AddForeignKey
 ALTER TABLE "XpTransaction" ADD CONSTRAINT "XpTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NotificationPreference" ADD CONSTRAINT "NotificationPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PushSubscription" ADD CONSTRAINT "PushSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

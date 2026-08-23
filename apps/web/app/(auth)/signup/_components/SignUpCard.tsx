@@ -93,7 +93,7 @@ export default function SignUpCard() {
       );
       toast.success("Account created successfully!");
 
-      router.push("/dashboard");
+      router.push("/onboarding");
     } catch (error: any) {
       console.error("Sign up execution failed:", error);
       toast.error("Failed to create the user");
