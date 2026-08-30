@@ -8,11 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { NotificationService } from './notification.service';
-import { PrismaService } from 'src/common/prisma/prisma.service';
-import { AppNotification } from './schemas/notification.schema';
 import { UpdateNotificationPreferenceDto } from './dto/notification.dto';
 import {
   type AuthenticatedRequest,
@@ -25,12 +21,7 @@ import { CreateWebPushSubscriptionDto } from './dto/web-push.dto';
 @Controller('notifications')
 @UseGuards(AuthGaurd)
 export class NotificationController {
-  constructor(
-    private readonly notificationService: NotificationService,
-    private readonly prisma: PrismaService,
-    @InjectModel(AppNotification.name)
-    private readonly notificationModel: Model<AppNotification>,
-  ) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   /**
    * 1. GET IN-APP NOTIFICATIONS (Offline Recovery)

@@ -16,13 +16,17 @@ import {
 import { GamificationService } from 'src/common/gamification/gamification.service';
 import { HabitLogService } from '../habits/habit-log/habit-log.service';
 import { Prisma } from '@day-mark/db';
-import { getLocalDateBounds } from 'src/common/utils/time.utils';
+import {
+  getLocalDateBounds,
+  getUserLogicalDate,
+} from 'src/common/utils/time.utils';
 import { TasksCacheRepository } from './repos/task-cache.repo';
 import { GamificationCacheRepository } from 'src/common/gamification/repos/gamification-cache.repo';
 import { HabitsService } from '../habits/habits.service';
 import { TaskLogService } from './task-logs/task-logs.service';
 import { GoalsService } from '../goals/goals.service';
 import { HistoricalDayLog } from 'src/common/types/types';
+import { UserCacheRepository } from '../user/repos/user-cache.repo';
 
 @Injectable()
 export class TasksService {
@@ -38,6 +42,7 @@ export class TasksService {
     private readonly taskLogService: TaskLogService,
     @Inject(forwardRef(() => GoalsService))
     private readonly goalsService: GoalsService,
+    private readonly userCache: UserCacheRepository,
   ) {}
 
   private getCacheKey(userId: string): string {
@@ -57,35 +62,46 @@ export class TasksService {
       );
     }
 
-    let resolvedTimeZone = timeZone;
-
     const prismaClient = tx || this.prisma.client;
 
-    if (!resolvedTimeZone) {
-      const user = await prismaClient.user.findUnique({
+    // Fetch user's timeZone and dayStartTime from Redis cache or DB
+    const userProfile = await this.userCache.getCoreProfile(userId);
+    let resolvedTimeZone = timeZone || userProfile?.timeZone;
+    let resolvedDayStartTime = userProfile?.dayStartTime;
+
+    if (!resolvedTimeZone || !resolvedDayStartTime) {
+      const userDb = await prismaClient.user.findUnique({
         where: { id: userId },
-        select: { timeZone: true },
+        select: { timeZone: true, dayStartTime: true },
       });
-      resolvedTimeZone = user?.timeZone || 'Asia/Kolkata';
+      resolvedTimeZone = resolvedTimeZone || userDb?.timeZone || 'Asia/Kolkata';
+      resolvedDayStartTime =
+        resolvedDayStartTime || userDb?.dayStartTime || '05:00';
     }
 
-    let scheduledDate: string | undefined;
-    let computedDueTimeUtc = data.dueTime;
+    const { startOfToday, endOfToday } = getLocalDateBounds(
+      resolvedTimeZone,
+      resolvedDayStartTime,
+    );
 
+    const scheduledDate = getUserLogicalDate(
+      resolvedTimeZone,
+      resolvedDayStartTime,
+    );
+
+    // If custom timings are removed or not specified, dueTime is set to endOfToday (23 hrs 59 mins after startDay)
+    let computedDueTimeUtc: Date;
     if (data.dueTime) {
       const rawDate = new Date(data.dueTime);
-
-      const formatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: resolvedTimeZone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-      scheduledDate = formatter.format(rawDate); // Returns "YYYY-MM-DD" cleanly
-
-      // 2. Ensure dueTime is a valid JavaScript Date object
-      computedDueTimeUtc = rawDate;
+      if (rawDate < startOfToday || rawDate > endOfToday) {
+        computedDueTimeUtc = endOfToday;
+      } else {
+        computedDueTimeUtc = rawDate;
+      }
+    } else {
+      computedDueTimeUtc = endOfToday;
     }
+
     const taskType = data.type || 'Standard';
 
     const newTask = await prismaClient.task.create({
@@ -151,14 +167,22 @@ export class TasksService {
   }
 
   async getDashboardTasks(userId: string) {
-    const user = await this.prisma.client.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { timeZone: true, dayStartTime: true },
-    });
+    const userProfile = await this.userCache.getCoreProfile(userId);
+    let timeZone = userProfile?.timeZone;
+    let dayStartTime = userProfile?.dayStartTime;
+
+    if (!timeZone || !dayStartTime) {
+      const user = await this.prisma.client.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: { timeZone: true, dayStartTime: true },
+      });
+      timeZone = user.timeZone;
+      dayStartTime = user.dayStartTime;
+    }
 
     const { startOfToday, endOfToday } = getLocalDateBounds(
-      user.timeZone,
-      user.dayStartTime,
+      timeZone,
+      dayStartTime,
     );
 
     const [todaysTasks, abandonedTasks] = await Promise.all([

@@ -13,11 +13,8 @@ import DashboardOverlays, {
 } from "./_components/DashboardOverlays";
 
 import { useHabits } from "@/core/hooks/useHabits";
-import HabitsTableSkeleton from "./_components/skeletons/HabitsTableSkeleton";
-import { DashboardHeatmap } from "./_components/dashboardCards/DashboardHeatMap";
 import useDashboardTasks from "@/core/hooks/useDashboardTasks";
 import useReflectionTrigger from "@/core/hooks/useReflectionTrigger";
-import RedesignedWeeklyCalendar from "@/components/custom-components/core/Calender";
 
 export default function DashboardView() {
   const [activeModal, setActiveModal] = useState<ActiveModalType>(null);
@@ -124,8 +121,7 @@ export default function DashboardView() {
           </p>
         </div>
       </div>
-      <RedesignedWeeklyCalendar />
-
+      
       {/* Decentralized Overlay Interface Layer */}
       <DashboardOverlays
         activeModal={activeModal}

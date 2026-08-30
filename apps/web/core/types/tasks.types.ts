@@ -5,9 +5,9 @@ export enum Priority {
 }
 
 export interface TaskDTO {
-  title: string,
-  priority: Priority,
-  dueTime: Date
+  title: string;
+  priority: Priority | "HIGH" | "MEDIUM" | "LOW";
+  dueTime?: string | Date;
 }
 
 export interface TaskResponse {

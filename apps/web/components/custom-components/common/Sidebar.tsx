@@ -28,10 +28,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import useUserProfile from "@/core/hooks/useUserProfile";
+import NotificationTrigger from "./NotificationTrigger";
 
 const navItems = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -203,10 +203,11 @@ export default function Sidebar() {
                 <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Search className="w-3.5 h-3.5" />
                 </button>
-                <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative">
+                {/* <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative">
                   <Bell className="w-3.5 h-3.5" />
                   <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-[#818CF8] rounded-full" />
-                </button>
+                </button> */}
+                <NotificationTrigger />
                 <button
                   onClick={toggleTheme}
                   className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative overflow-hidden w-3.5 h-3.5 flex items-center justify-center"

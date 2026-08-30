@@ -22,7 +22,7 @@ import { UserCacheRepository } from './repos/user-cache.repo';
     UserActivityService,
     UserCacheRepository,
   ],
-  exports: [UserService],
+  exports: [UserService, UserCacheRepository],
   controllers: [UserController],
 })
 export class UserModule {}

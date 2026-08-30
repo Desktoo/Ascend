@@ -63,12 +63,19 @@ export class UserController {
     @Req() req: AuthenticatedRequest,
   ) {
     await this.selfReflectionService.submitReflection(dto, req.user.userId);
+    return {
+      success: true,
+      message: 'Self reflection recorded successfully.',
+    };
   }
 
   @Post('active')
   @HttpCode(HttpStatus.OK)
   async recordUserActivity(@Req() req: AuthenticatedRequest) {
     await this.activityService.recordActivity(req.user.userId);
+    return {
+      success: true,
+    };
   }
 
   @Patch('update-profile')

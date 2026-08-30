@@ -53,7 +53,7 @@ export class UserActivityService {
 
       // 2. Build bulk update transactions for Prisma
       const updateStatements = userIds.map((id) =>
-        this.prisma.client.user.update({
+        this.prisma.client.user.updateMany({
           where: { id },
           data: { lastActive: new Date(activeMap[id]) },
         }),

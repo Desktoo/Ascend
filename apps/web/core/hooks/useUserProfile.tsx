@@ -1,7 +1,7 @@
 import { apiClient } from "@/core/services/client";
 import useSWR from "swr";
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   userName: string;
   email: string;
@@ -17,14 +17,23 @@ interface UserProfile {
 }
 
 export default function useUserProfile() {
-  const { data, error, isLoading, mutate, isValidating } = useSWR<UserProfile>("/user/profile", () => apiClient<UserProfile>("/user/profile"))
+  const { data, error, isLoading, mutate, isValidating } = useSWR<UserProfile>(
+    "/user/profile",
+    () => apiClient<UserProfile>("/user/profile"),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: (err) => {
+        return err?.message !== "SESSION_EXPIRED" && !err?.message?.includes("401");
+      },
+    }
+  );
 
   return {
     user: data,
     isLoading,
     isError: error,
     mutate,
-    isValidating
-  }
+    isValidating,
+  };
 }
 

@@ -223,6 +223,17 @@ export class UserService {
         where: { id: userId },
         data: { timeZone: timeZone },
       });
+
+      // Write-Through: Update the Redis Cache
+      const existingCache = await this.userCache.getCoreProfile(userId);
+      if (existingCache) {
+        await this.userCache.setCoreProfile(userId, {
+          ...existingCache,
+          timeZone,
+        });
+      } else {
+        await this.userCache.invalidateProfile(userId);
+      }
     } catch (error) {
       console.error(error);
       throw new NotFoundException('Failed to update timezone. User not Found.');

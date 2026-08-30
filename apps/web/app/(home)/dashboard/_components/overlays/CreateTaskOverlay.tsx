@@ -36,7 +36,7 @@ export default function CreateTaskOverlay({
   const { mutate } = useSWRConfig();
 
   const { register, handleSubmit, control, reset } = useForm<TaskFormInputs>({
-    defaultValues: {
+    values: {
       title: "",
       priority: Priority.MEDIUM,
       dueTime: "00:00",
@@ -153,6 +153,7 @@ export default function CreateTaskOverlay({
             <Input
               type="text"
               required
+              style={{ outline: "none" }}
               placeholder="e.g., Finish Project report"
               {...register("title", { required: true })}
               className="w-full h-10 bg-zinc-950/40 border-slate-800 rounded-md text-sm text-white placeholder:text-slate-600 focus-visible:ring-1 focus-visible:ring-[#818CF8]/40 focus-visible:border-[#818CF8]/40 transition-all font-sans"
@@ -167,6 +168,7 @@ export default function CreateTaskOverlay({
             <div className="relative">
               <input
                 type="time"
+                style={{ outline: "none" }}
                 required
                 {...register("dueTime", { required: true })}
                 className="w-full h-10 px-4 bg-zinc-950/40 border border-slate-800 rounded-md text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#818CF8]/40 focus:border-[#818CF8]/40 transition-all scheme-dark font-sans"

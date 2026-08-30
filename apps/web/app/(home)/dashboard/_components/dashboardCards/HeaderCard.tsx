@@ -32,8 +32,6 @@ export default function HeaderCard({
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const { user, isLoading, isValidating } = useUserProfile();
 
-  console.log("User Profile Data:", user);
-
   // ── 🧠 LOCAL ANIMATION MIRROR REGISTERS (Prevents SWR Flapping) ──
   const [renderLevel, setRenderLevel] = useState(1);
   const [renderXp, setRenderXp] = useState(0);

@@ -13,6 +13,9 @@ import { RedisCacheService } from 'src/common/redis-cache/redis-cache.service';
 import { WebPushProvider } from './providers/web-push.provider';
 import { LocalRedisModule } from 'src/common/local-redis/local-redis.module';
 import { JwtService } from '@nestjs/jwt';
+import { NotificationCron } from './cron/notification.cron';
+import { BullModule } from '@nestjs/bullmq';
+import { NotificationProcessor } from './consumers/notification.processor';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { JwtService } from '@nestjs/jwt';
       { name: AppNotification.name, schema: AppNotificationSchema },
     ]),
     LocalRedisModule,
+    BullModule.registerQueue({
+      name: 'notification-queue',
+    }),
   ],
   providers: [
     NotificationService,
@@ -29,6 +35,8 @@ import { JwtService } from '@nestjs/jwt';
     NotificationGateway,
     PrismaService,
     RedisCacheService,
+    NotificationCron,
+    NotificationProcessor,
   ],
   controllers: [NotificationController],
 })

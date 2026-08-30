@@ -53,10 +53,11 @@ export class NotificationService implements OnModuleInit {
     userId: string,
     data: UpdateNotificationPreferenceDto,
   ) {
-    const updatedPrefs = await this.prisma.client.notificationPreference.update(
+    const updatedPrefs = await this.prisma.client.notificationPreference.upsert(
       {
         where: { userId },
-        data,
+        update: data,
+        create: { userId, ...data },
       },
     );
 

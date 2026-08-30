@@ -1,22 +1,31 @@
 // components/Footer.tsx
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-slate-800/50 bg-[#02040A] pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-6 sm:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
+    <footer className="w-full border-t border-purple-900/30 bg-[#06030c] pt-10 pb-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
         
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-md bg-[#004F98]/20 border border-[#007BFF]/40 text-[#3399FF] flex items-center justify-center font-bold text-xs">
-            A
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 flex items-center justify-center">
+            <Image
+              src="/logo.svg"
+              alt="Ascend Logo"
+              width={20}
+              height={20}
+              className="w-full h-full object-contain"
+            />
           </div>
-          <span className="text-slate-300 font-medium text-sm">© {new Date().getFullYear()} Ascend Technologies</span>
+          <span className="text-slate-400 font-medium text-xs">
+            © {new Date().getFullYear()} Ascend. All rights reserved.
+          </span>
         </div>
 
-        <ul className="flex items-center gap-8 text-xs text-slate-500 font-medium">
-          <li><Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link></li>
-          <li><Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link></li>
-          <li><Link href="/contact" className="hover:text-slate-300 transition-colors">Contact</Link></li>
+        <ul className="flex items-center gap-6 text-[11px] text-slate-400 font-medium">
+          <li><Link href="/privacy" className="hover:text-purple-300 transition-colors">Privacy Policy</Link></li>
+          <li><Link href="/terms" className="hover:text-purple-300 transition-colors">Terms of Service</Link></li>
+          <li><Link href="/contact" className="hover:text-purple-300 transition-colors">Contact</Link></li>
         </ul>
         
       </div>

@@ -1,154 +1,225 @@
+"use client";
+
+import { useRef } from "react";
+import { Zap, Award, Flame, TrendingUp, Trophy } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 export default function GrowthEngineSection() {
-  // Exponential growth data to simulate the 1% compounding curve
-  const growthData = [2, 3, 5, 8, 12, 17, 24, 34, 47, 65, 85, 100];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // Exponential compounding curve data
+  const growthCurve = [3, 5, 8, 12, 18, 26, 36, 49, 64, 82, 95, 100];
+
+  useGSAP(
+    () => {
+      // Left Column Fade-in
+      gsap.fromTo(
+        leftColRef.current,
+        { x: -40, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 75%",
+          },
+        }
+      );
+
+      // Right Column Fade-in
+      gsap.fromTo(
+        rightColRef.current,
+        { x: 40, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 75%",
+          },
+        }
+      );
+
+      // Exponential bars rise
+      if (chartRef.current) {
+        const bars = chartRef.current.querySelectorAll(".comp-bar");
+        gsap.fromTo(
+          bars,
+          { scaleY: 0, transformOrigin: "bottom" },
+          {
+            scaleY: 1,
+            duration: 1,
+            stagger: 0.07,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: chartRef.current,
+              start: "top 80%",
+            },
+          }
+        );
+      }
+    },
+    { scope: containerRef }
+  );
 
   return (
-    <section id="growth-engine" className="relative py-24 sm:py-32 px-4 w-full max-w-6xl mx-auto overflow-hidden">
-      
-      {/* Subtle Ambient Glow */}
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-[#0B213B]/40 rounded-full blur-[150px] pointer-events-none" />
+    <section
+      id="growth-engine"
+      ref={containerRef}
+      className="relative py-14 sm:py-20 px-4 w-full max-w-4xl mx-auto overflow-hidden"
+    >
+      {/* Ambient Purple Lighting */}
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[450px] h-[450px] bg-purple-900/25 rounded-full blur-[130px] pointer-events-none" />
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
         
-        {/* ── Left Column: Copy & Philosophy ── */}
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-10 duration-1000 ease-out" style={{ animationTimeline: 'view()' }}>
-          
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B213B]/40 border border-[#0B213B] text-[#66B2FF] text-[10px] uppercase tracking-widest font-semibold">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-              The Growth Engine
+        {/* ── Left Column: Compounding & Gamification Mechanics ── */}
+        <div ref={leftColRef} className="space-y-5">
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-700/40 text-purple-300 text-[10px] font-semibold uppercase tracking-widest">
+              <Zap className="w-2.5 h-2.5 text-purple-400" />
+              <span>The Gamification Engine</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-[1.1]">
-              Small actions compound into <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#3399FF] to-[#99CCFF]">massive change.</span>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-white tracking-tight leading-[1.18]">
+              Small Daily Wins Compound Into{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-white">
+                Massive Change.
+              </span>
             </h2>
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-light">
-              Ascend operates on a simple mathematical truth: improving by just 1% every day makes you 37 times better by the end of the year. We don&apos;t track perfection; we track compounding execution.
+            <p className="text-xs text-slate-300 leading-relaxed font-light">
+              Ascend gamifies personal discipline through mathematical compounding. Improving by just 1% every day makes you 37.78x better over the course of a year.
             </p>
           </div>
 
-          <div className="space-y-8">
-            {/* Point 1: Momentum */}
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#0B213B]/50 border border-[#004F98]/40 flex items-center justify-center text-[#3399FF] shadow-[0_0_15px_rgba(0,79,152,0.3)]">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <div className="space-y-3">
+            {/* Feature 1: XP Progression */}
+            <div className="flex gap-3 p-2.5 rounded-xl bg-purple-950/20 border border-purple-800/30">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-900/50 border border-purple-700/60 flex items-center justify-center text-purple-300 shadow-[0_0_10px_rgba(126,34,206,0.25)]">
+                <Trophy className="w-3.5 h-3.5 text-purple-300" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white mb-1">Unstoppable Momentum</h3>
-                <p className="text-sm text-slate-400 font-light leading-relaxed">
-                  The hardest part is starting. By lowering the friction to track micro-habits, Ascend helps you build kinetic energy. A 3-day streak turns into a 30-day lifestyle.
+                <h3 className="text-xs sm:text-sm font-semibold text-white mb-0.5">XP Progression & Level Ups</h3>
+                <p className="text-[11px] text-slate-300 font-light leading-relaxed">
+                  Earn verifiable XP points for completing focus sessions, checking off habits, and performing evening reflections.
                 </p>
               </div>
             </div>
 
-            {/* Point 2: Milestones */}
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#0B213B]/50 border border-[#004F98]/40 flex items-center justify-center text-[#3399FF] shadow-[0_0_15px_rgba(0,79,152,0.3)]">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+            {/* Feature 2: Rank Theme Unlocks */}
+            <div className="flex gap-3 p-2.5 rounded-xl bg-purple-950/20 border border-purple-800/30">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-900/50 border border-purple-700/60 flex items-center justify-center text-purple-300 shadow-[0_0_10px_rgba(126,34,206,0.25)]">
+                <Award className="w-3.5 h-3.5 text-purple-300" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white mb-1">Data-Driven Milestones</h3>
-                <p className="text-sm text-slate-400 font-light leading-relaxed">
-                  Blind effort leads to burnout. The system visualizes your growth trajectory, turning abstract effort into concrete, celebrated milestones along your journey.
+                <h3 className="text-xs sm:text-sm font-semibold text-white mb-0.5">Rank-Gated Aesthetics</h3>
+                <p className="text-[11px] text-slate-300 font-light leading-relaxed">
+                  Consistency unlocks exclusive rank badges, dynamic UI themes, and workspace achievements.
                 </p>
               </div>
             </div>
 
-            {/* Point 3: Identity */}
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#0B213B]/50 border border-[#004F98]/40 flex items-center justify-center text-[#3399FF] shadow-[0_0_15px_rgba(0,79,152,0.3)]">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            {/* Feature 3: Kinetic Momentum Retention */}
+            <div className="flex gap-3 p-2.5 rounded-xl bg-purple-950/20 border border-purple-800/30">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-900/50 border border-purple-700/60 flex items-center justify-center text-purple-300 shadow-[0_0_10px_rgba(126,34,206,0.25)]">
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white mb-1">Identity Architecture</h3>
-                <p className="text-sm text-slate-400 font-light leading-relaxed">
-                  Every action is a vote for the person you wish to become. As your charts trend upwards, your self-image shifts. You don&apos;t just &quot;do tasks&quot;—you become an executor.
+                <h3 className="text-xs sm:text-sm font-semibold text-white mb-0.5">Streak Defense & Momentum Multipliers</h3>
+                <p className="text-[11px] text-slate-300 font-light leading-relaxed">
+                  Multi-week streaks trigger XP multipliers, turning your momentum into an addictive positive feedback loop.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Right Column: The Visuals (Graphs & Data) ── */}
-        <div className="relative h-[500px] w-full flex items-center justify-center animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 ease-out" style={{ animationTimeline: 'view()' }}>
+        {/* ── Right Column: Compounding Visuals & XP HUD ── */}
+        <div ref={rightColRef} className="relative flex flex-col gap-3.5 items-center">
           
-          {/* Main Glass Card (The Exponential Growth Chart) */}
-          <div className="absolute inset-0 max-w-md mx-auto my-auto h-80 rounded-2xl bg-[#050B14]/80 backdrop-blur-xl border border-[#0B213B] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] p-6 flex flex-col justify-between overflow-hidden">
+          {/* Main Compounding Card */}
+          <div className="w-full rounded-2xl bg-[#090514]/90 border border-purple-700/50 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(126,34,206,0.2)] p-4 sm:p-5 backdrop-blur-xl relative overflow-hidden">
             
-            {/* Background Equation Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl font-serif font-bold text-white/[0.02] whitespace-nowrap pointer-events-none">
+            {/* Background Equation */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl sm:text-6xl font-serif font-black text-purple-500/[0.04] whitespace-nowrap pointer-events-none">
               (1.01)³⁶⁵
             </div>
 
-            <div className="relative z-10 flex justify-between items-start">
+            <div className="relative z-10 flex justify-between items-start mb-3">
               <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Compound Effect</p>
-                <div className="text-white text-3xl font-bold font-serif">37.78x <span className="text-sm text-[#3399FF] font-sans font-normal">Growth</span></div>
+                <p className="text-[9px] text-purple-300 uppercase tracking-widest font-mono font-semibold mb-0.5">
+                  The 1% Daily Law
+                </p>
+                <div className="text-white text-xl sm:text-2xl font-bold font-serif">
+                  37.78x <span className="text-[11px] font-sans font-normal text-purple-300">Growth</span>
+                </div>
               </div>
-              <div className="px-2 py-1 rounded bg-[#0B213B] border border-[#004F98]/50 text-[#66B2FF] text-[10px] font-bold">
-                Year 1 Projection
+              <div className="px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-600/50 text-purple-300 text-[10px] font-mono font-bold">
+                1 Year Compounding
               </div>
             </div>
 
-            {/* The Animated Exponential Bar Chart */}
-            <div className="relative z-10 h-32 flex items-end justify-between gap-1 mt-auto">
-              {growthData.map((height, i) => (
-                <div key={i} className="relative flex-1 bg-white/[0.02] rounded-t-sm group">
-                  <div 
-                    className="absolute bottom-0 w-full bg-gradient-to-t from-[#004F98] to-[#3399FF] rounded-t-sm"
-                    style={{ 
-                      height: `${height}%`,
-                      // Pure CSS animation to make bars grow on load
-                      animation: `grow-up 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
-                      animationDelay: `${i * 100}ms`,
-                      transformOrigin: 'bottom'
-                    }}
+            {/* GSAP Animated Exponential Bar Chart */}
+            <div ref={chartRef} className="relative z-10 h-24 flex items-end justify-between gap-1 sm:gap-1.5 mt-2.5">
+              {growthCurve.map((h, i) => (
+                <div key={i} className="relative flex-1 bg-purple-950/40 rounded-t h-full flex items-end">
+                  <div
+                    className={`comp-bar w-full rounded-t ${
+                      i >= 9
+                        ? "bg-gradient-to-t from-purple-700 via-purple-500 to-purple-300 shadow-[0_0_8px_rgba(168,85,247,0.7)]"
+                        : "bg-gradient-to-t from-purple-900 to-purple-600"
+                    }`}
+                    style={{ height: `${h}%` }}
                   />
-                  {/* Custom CSS for the bar growth */}
-                  <style>{`
-                    @keyframes grow-up {
-                      0% { transform: scaleY(0); opacity: 0; }
-                      100% { transform: scaleY(1); opacity: 1; }
-                    }
-                  `}</style>
                 </div>
               ))}
             </div>
+
+            <div className="flex justify-between items-center text-[8px] font-mono text-purple-400/80 pt-2 border-t border-purple-900/40 mt-2">
+              <span>Day 1 (1.00x)</span>
+              <span>Day 180 (5.99x)</span>
+              <span className="text-purple-300 font-bold">Day 365 (37.78x)</span>
+            </div>
           </div>
 
-          {/* Floating Widget 1: Consistency (Top Left) */}
-          <div className="absolute -left-4 sm:left-4 top-16 w-48 rounded-xl bg-[#0A1220]/90 backdrop-blur-md border border-[#0B213B] p-4 shadow-[0_15px_30px_rgba(0,0,0,0.5)] transform -rotate-2 hover:rotate-0 transition-transform duration-300">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#004F98]/20 flex items-center justify-center text-[#3399FF]">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          {/* Floating Sub-Widgets Grid */}
+          <div className="grid grid-cols-2 gap-3 w-full">
+            {/* Sub-Widget 1: Streak Retention */}
+            <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-800/40 backdrop-blur-md">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Flame className="w-3 h-3 text-orange-400" />
+                <span className="text-[9px] font-mono uppercase tracking-wider text-slate-300">Streak Defense</span>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Consistency</p>
-                <p className="text-white text-sm font-bold">98.2% <span className="text-green-400 text-[10px]">↑</span></p>
-              </div>
+              <p className="text-base sm:text-lg font-bold font-serif text-white">98.4% <span className="text-purple-400 text-[9px]">↑</span></p>
+              <span className="text-[8px] text-slate-400">Zero broken chains</span>
             </div>
-            {/* Mini line chart simulation */}
-            <div className="h-6 w-full bg-[url('data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCwxMDAgTDIwLDYwIEw0MCw4MCBMNjAsMzAgTDgwLDQwIEwxMDAsMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzM5OUZGIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')] bg-no-repeat bg-cover opacity-80" />
-          </div>
 
-          {/* Floating Widget 2: Focus (Bottom Right) */}
-          <div className="absolute -right-4 sm:right-4 bottom-12 w-48 rounded-xl bg-[#0A1220]/90 backdrop-blur-md border border-[#0B213B] p-4 shadow-[0_15px_30px_rgba(0,0,0,0.5)] transform rotate-3 hover:rotate-0 transition-transform duration-300">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#004F98]/20 flex items-center justify-center text-[#3399FF]">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            {/* Sub-Widget 2: Focus Time */}
+            <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-800/40 backdrop-blur-md">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="w-3 h-3 text-purple-400" />
+                <span className="text-[9px] font-mono uppercase tracking-wider text-slate-300">Deep Focus</span>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Deep Focus</p>
-                <p className="text-white text-sm font-bold">14h 20m <span className="text-[#3399FF] text-[10px]">↑</span></p>
-              </div>
-            </div>
-            {/* Mini progress bar simulation */}
-            <div className="h-1.5 w-full bg-[#0B213B] rounded-full overflow-hidden mt-3">
-              <div className="h-full w-4/5 bg-gradient-to-r from-[#004F98] to-[#3399FF] rounded-full" />
+              <p className="text-base sm:text-lg font-bold font-serif text-white">18.5 hrs <span className="text-purple-400 text-[9px]">↑</span></p>
+              <span className="text-[8px] text-slate-400">This week logged</span>
             </div>
           </div>
 
         </div>
+
       </div>
     </section>
   );
-}
+}

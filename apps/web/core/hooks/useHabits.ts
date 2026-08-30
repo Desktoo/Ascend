@@ -11,8 +11,6 @@ export function useHabits() {
     () => apiClient<HabitsPageResponse[]>("/habits/all"),
   );
 
-  console.log("this is data from the hook", data)
-
   return {
     habits: data ?? [],
     isLoading,

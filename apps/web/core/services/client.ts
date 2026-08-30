@@ -1,8 +1,24 @@
-const baseUrl = "http://localhost:3000";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 // Endpoints where a 401 is a final answer (bad credentials, no session yet),
 // not a signal to silently refresh and retry.
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/signup", "/auth/refresh"];
+
+/**
+ * Safely parses the response body without throwing
+ * "Unexpected end of JSON input" when the body is empty or non-JSON.
+ */
+async function parseResponseBody<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  if (!text || text.trim().length === 0) {
+    return {} as T;
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as unknown as T;
+  }
+}
 
 export async function apiClient<T>(
   endpoint: string,
@@ -40,16 +56,15 @@ export async function apiClient<T>(
           const retryResponse = await fetch(`${baseUrl}${endpoint}`, config);
 
           if (!retryResponse.ok) {
-            const retryErrorData = await retryResponse
-              .json()
-              .catch(() => ({}));
+            const retryErrorData = await parseResponseBody<Record<string, unknown> | string>(retryResponse);
             throw new Error(
-              retryErrorData.message ||
+              (typeof retryErrorData === "object" && typeof retryErrorData?.message === "string" && retryErrorData.message) ||
+                (typeof retryErrorData === "string" && retryErrorData) ||
                 `HTTP Error: ${retryResponse.status}`,
             );
           }
 
-          return (await retryResponse.json()) as T;
+          return await parseResponseBody<T>(retryResponse);
         }
 
         // Refresh itself failed — surface this distinctly from a normal
@@ -58,11 +73,15 @@ export async function apiClient<T>(
         throw new Error("SESSION_EXPIRED");
       }
 
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP Error: ${response.status}`);
+      const errorData = await parseResponseBody<Record<string, unknown> | string>(response);
+      const errorMessage =
+        (typeof errorData === "object" && typeof errorData?.message === "string" && errorData.message) ||
+        (typeof errorData === "string" && errorData) ||
+        `HTTP Error: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
-    return (await response.json()) as T;
+    return await parseResponseBody<T>(response);
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown Network Error";
