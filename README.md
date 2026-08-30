@@ -1,8 +1,8 @@
 # Ascend
 
-**A discipline engine that turns long-horizon goals and recurring habits into timezone-aware daily tasks, then compounds execution into streaks, XP, and visual history.**
+**A discipline and execution engine that transforms long-horizon goals and recurring habits into timezone-aware daily tasks — compounding consistency into measurable streaks, XP progression, and visual history.**
 
-The product surface is branded **Ascend**. The repository, packages, and database live under **Day Mark**. Both names refer to the same system.
+*Note on Naming:* The user-facing application is branded **Ascend**, while the repository, packages, and database schema are identified as **Day Mark**. Both refer to the same unified system.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
@@ -14,22 +14,38 @@ The product surface is branded **Ascend**. The repository, packages, and databas
 [![pnpm](https://img.shields.io/badge/pnpm-11.7-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Status](https://img.shields.io/badge/status-local_dev-yellow)](#getting-started)
 
-> **Status:** Fully functioning on a local machine. Not deployed. Production URLs, CI badges, and live screenshots belong in the placeholders below.
+> **Status:** Fully functioning on a local machine. Not deployed. Production URLs, CI badges, and live walkthroughs belong in the placeholders below.
+
+---
+
+## Video walkthroughs
+
+| 🔐 Auth Flow & Task Creation | 🔄 Habit Creation & Tracking |
+| :---: | :---: |
+| [![Auth Flow & Task Creation](https://img.youtube.com/vi/G5S9tzSJgGQ/hqdefault.jpg)](https://youtu.be/G5S9tzSJgGQ)<br/>[▶ **Watch Walkthrough**](https://youtu.be/G5S9tzSJgGQ) | [![Habit Creation & Tracking](https://img.youtube.com/vi/oadoJzAzx1E/hqdefault.jpg)](https://youtu.be/oadoJzAzx1E)<br/>[▶ **Watch Walkthrough**](https://youtu.be/oadoJzAzx1E) |
+
+| 🎯 Goal / Objective Tracking | ⚙️ Settings & Notification Flow |
+| :---: | :---: |
+| [![Goal & Objective Tracking](https://img.youtube.com/vi/5VnbFcuxeYA/hqdefault.jpg)](https://youtu.be/5VnbFcuxeYA)<br/>[▶ **Watch Walkthrough**](https://youtu.be/5VnbFcuxeYA) | [![Settings & Notification Flow](https://img.youtube.com/vi/5F05dFvYh7E/hqdefault.jpg)](https://youtu.be/5F05dFvYh7E)<br/>[▶ **Watch Walkthrough**](https://youtu.be/5F05dFvYh7E) |
 
 ---
 
 ## The problem and the solution
 
-**Problem.** Ambition fails in the gap between a yearly target and Tuesday afternoon. Motivation decays, goals leave the visual field, and generic to-do apps treat a one-off errand the same as a 90-day identity change. There is no durable mapping from *horizon* → *recurring behavior* → *today’s executable unit*, and no honest record of skipped days.
+**Problem.** It is easy to set big goals (like *"get fit"*, *"read 20 books"*, or *"master a new skill"*), but hard to stick with them every single day. Most people lose momentum because:
 
-**Solution.** Day Mark is a **system of record for execution**, not a notes app with checkboxes.
+1. **Big goals feel too distant:** A 6-month target doesn't give you a clear, executable plan for today.
+2. **Generic to-do apps don't build discipline:** Checking off a grocery item gets treated the same as studying every morning for 90 days.
+3. **Skipped days are easily forgotten:** When a habit is missed in a normal to-do list, it simply vanishes without an honest record of consistency or lost momentum.
 
-1. **Goals** (`WEEKLY` / `MONTHLY`) carry target days, skip counts, velocity, and optional weekend exclusion. They spawn `GoalTask` rows.
-2. **Habits** declare which weekdays they fire, a task title, due time, and priority. A BullMQ worker materializes `HabitTask` rows for timezone-aligned schedule groups. Completion is compacted into a 31-character monthly history string (`S` skipped / `D` done) plus an append-only DynamoDB audit trail.
-3. **The dashboard** is the only place work is supposed to happen: today’s tasks, overlays for creation/abandonment/notifications, and a daily reflection that uses the user’s `dayStartTime` + IANA timezone to compute a *logical date* (so a 2am session still belongs to “yesterday” if the user’s day starts at 05:00).
-4. **Gamification** (XP, level, rank) and **notifications** (in-app Socket.IO + Web Push) close the loop so consistency is visible and interruptions are scheduled, not hoped for.
+**Solution.** Day Mark (Ascend) is a **system of record for daily execution**, designed to bridge the gap between high-level ambition and daily action:
 
-If you only remember one design constraint: **Postgres owns identity and the current world; DynamoDB owns immutable day-level logs; MongoDB owns a disposable notification inbox.**
+1. **Goals become daily tasks:** Long-horizon targets (`WEEKLY` / `MONTHLY`) automatically spawn linked daily tasks with real-time velocity and progress tracking.
+2. **Habits run on autopilot:** Define which weekdays a habit fires and at what time. Background workers automatically schedule and materialize tasks right on cue.
+3. **Timezone-aware day schedules:** Execution respects your personal `dayStartTime` and IANA timezone — so a 2:00 AM session still belongs to your active day if your morning starts at 5:00 AM.
+4. **Compounding progress:** Completed tasks earn XP, unlock ranks, and update an immutable daily ledger (audit log) so consistency is visually celebrated and proven over time.
+
+If you remember one architectural rule: **Postgres owns identity and current state; DynamoDB owns immutable daily audit logs; MongoDB owns the disposable notification inbox.**
 
 ---
 
