@@ -398,11 +398,9 @@ pnpm check-types
 ---
 
 ## License
-
-[Insert License — e.g. MIT]
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ## Author
+**Akshat Krishan** · [GitHub](https://github.com/Desktoo) · [LinkedIn](https://www.linkedin.com/in/your-profile)
 
-[Insert Your Name] · [Insert GitHub URL] · [Insert LinkedIn URL]
-
-Built as a full-stack systems project (monorepo, queues, polyglot persistence, cookie JWT). Intended for reviewers who care more about **boundaries and failure modes** than about another CRUD todo list.
+Built as a full-stack systems project (monorepo, queues, polyglot persistence, cookie JWT). Intended for reviewers who care more about boundaries and failure modes than about another CRUD todo list.
