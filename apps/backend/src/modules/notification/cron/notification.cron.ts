@@ -5,12 +5,14 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { DispatchNotificationDto } from '../notification.types';
+import { InAppProvider } from '../providers/in-app.provider';
 
 @Injectable()
 export class NotificationCron {
   private readonly logger = new Logger(NotificationCron.name);
 
   constructor(
+    private readonly inAppProvider: InAppProvider,
     private readonly prisma: PrismaService,
     @InjectQueue('notification-queue')
     private readonly notificationQueue: Queue,

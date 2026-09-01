@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { NotificationCron } from './cron/notification.cron';
 import { BullModule } from '@nestjs/bullmq';
 import { NotificationProcessor } from './consumers/notification.processor';
+import { NotificationListener } from './listeners/notification.listener';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { NotificationProcessor } from './consumers/notification.processor';
     RedisCacheService,
     NotificationCron,
     NotificationProcessor,
+    NotificationListener,
   ],
   controllers: [NotificationController],
 })

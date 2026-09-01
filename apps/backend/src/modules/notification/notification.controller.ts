@@ -7,6 +7,8 @@ import {
   Body,
   Req,
   UseGuards,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { UpdateNotificationPreferenceDto } from './dto/notification.dto';
@@ -28,12 +30,25 @@ export class NotificationController {
    * The frontend calls this when the user opens the app or clicks the Bell icon.
    * It fetches the buffered notifications from MongoDB.
    */
-  @Get('in-app')
-  async getInAppNotifications(@Req() req: AuthenticatedRequest) {
-    const data = await this.notificationService.getOfflineNotifications(
-      req.user.userId,
-    );
-    return { success: true, data };
+  @Get()
+  async getNotifications(@Req() req: AuthenticatedRequest) {
+    // Frontend SWR expects the array directly, not wrapped in { success, data }
+    return this.notificationService.getOfflineNotifications(req.user.userId);
+  }
+
+  @Delete(':id')
+  async deleteNotification(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    await this.notificationService.deleteNotification(req.user.userId, id);
+    return { success: true };
+  }
+
+  @Delete()
+  async clearAll(@Req() req: AuthenticatedRequest) {
+    await this.notificationService.clearAll(req.user.userId);
+    return { success: true };
   }
 
   /**

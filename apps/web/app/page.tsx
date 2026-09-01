@@ -22,25 +22,24 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen bg-[#06030c] text-slate-200 font-sans selection:bg-purple-700 selection:text-white overflow-x-hidden">
-      {/* Deep Space Purple / Cosmic Background */}
+    <div className="relative min-h-screen bg-[#08080a] text-zinc-200 font-sans selection:bg-purple-700 selection:text-white overflow-x-hidden antialiased">
+      {/* Subtle Ambient Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#2e1065_0%,_#06030c_70%)] opacity-80" />
-        <div className="absolute top-[40%] left-[-10%] w-[600px] h-[600px] bg-purple-900/15 rounded-full blur-[160px]" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[700px] h-[700px] bg-purple-800/15 rounded-full blur-[180px]" />
-        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.02] mix-blend-overlay" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-purple-950/20 rounded-full blur-[140px]" />
+        <div className="absolute top-[45%] right-[-5%] w-[450px] h-[450px] bg-purple-950/10 rounded-full blur-[160px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
       </div>
 
       <Navbar />
 
       <main className="relative z-10 flex flex-col items-center w-full">
-        {/* 1. Hero Section: Value Proposition & Live Mockup HUD */}
+        {/* 1. Hero Section: The Execution Problem & System Overview */}
         <HeroSection />
 
-        {/* 2. Feature Pillars: Bento Grid of Core App Capabilities */}
+        {/* 2. Feature Pillars: 4 Essential Pillars of Daily Execution */}
         <FeaturePillarsSection />
 
-        {/* 3. Growth Engine: Gamification, XP Progression & 1% Compounding */}
+        {/* 3. Growth Engine: Compounding & Gamification */}
         <GrowthEngineSection />
 
         {/* 4. Workflow: 4-Step Daily Execution Cycle */}

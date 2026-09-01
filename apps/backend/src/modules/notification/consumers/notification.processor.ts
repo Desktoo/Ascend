@@ -7,9 +7,9 @@ import {
   DispatchNotificationDto,
   NotificationPayload,
 } from '../notification.types';
+import { InAppProvider } from '../providers/in-app.provider';
 import { WebPushProvider } from '../providers/web-push.provider';
 import { NotificationTemplates } from '../templates/notification.registry';
-// import { NotificationGateway } from '../gateways/notification.gateway';
 
 @Processor('notification-queue')
 export class NotificationProcessor extends WorkerHost {
@@ -17,8 +17,8 @@ export class NotificationProcessor extends WorkerHost {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly inAppService: InAppProvider,
     private readonly webPushService: WebPushProvider,
-    // private readonly notificationGateway: NotificationGateway,
   ) {
     super();
   }
@@ -29,7 +29,7 @@ export class NotificationProcessor extends WorkerHost {
     );
 
     try {
-      const { userId, templateId, context } = job.data;
+      const { userId, category, templateId, context } = job.data;
 
       // 1. Fetch the exact template from your registry
       const templateGenerator = NotificationTemplates[templateId];
@@ -41,32 +41,13 @@ export class NotificationProcessor extends WorkerHost {
       // 2. Generate the dynamic payload (title, body, type, data)
       const payload: NotificationPayload = templateGenerator(context);
 
-      // 3. Check User Preferences (Optional but recommended)
-      // const prefs = await this.redis.get(`user:${userId}:notification_prefs`);
-      // if (prefs && !prefs.masterNotification) return { success: true, skipped: true };
+      // 3. Deliver to In-App Service (MongoDB + Live WebSocket) for PROGRESS / Rank Up
+      if (category === 'PROGRESS') {
+        await this.inAppService.send(userId, payload);
+      }
 
-      // 4. Save to PostgreSQL (Offline Inbox)
-      // Adjust this schema call to match your actual Prisma notification model
-      /*
-      await this.prisma.client.notification.create({
-        data: {
-          userId,
-          title: payload.title,
-          body: payload.body,
-          type: payload.type, // 'PROGRESS' | 'REMINDER' | 'SYSTEM'
-          isRead: false,
-        },
-      });
-      */
-
-      // 5. Fire Web Push (Desktop OS Notification)
-      // Uses the exact send() method you provided
+      // 4. Fire Web Push (Desktop OS Notification)
       await this.webPushService.send(userId, payload);
-
-      // 6. Fire WebSocket (Live UI Toast & Red Dot)
-      /*
-      this.notificationGateway.sendLiveNotification(userId, payload);
-      */
 
       this.logger.log(
         `[Worker] Successfully delivered ${templateId} to User ${userId}`,

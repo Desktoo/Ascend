@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisCacheService } from '../redis-cache/redis-cache.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -8,6 +9,7 @@ import { getXpRequiredForNextLevel } from './constants/xpCalculator';
 import { Prisma } from '@day-mark/db';
 import { Lock } from 'redlock';
 import { GamificationCacheRepository } from './repos/gamification-cache.repo';
+import { UserRankUpEvent } from '../events/user-rank-up.event';
 
 @Injectable()
 export class GamificationService {
@@ -17,6 +19,7 @@ export class GamificationService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisCacheService,
     private readonly gamificationCache: GamificationCacheRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -28,6 +31,7 @@ export class GamificationService {
     const cached = await this.gamificationCache.getFullHash(userId);
     let currentLevel: number;
     let currentXp: number;
+    let currentRank = '';
     let activeTheme: RankThemeType = 'GENERAL';
 
     if (!cached || !cached.xp) {
@@ -42,15 +46,20 @@ export class GamificationService {
 
       currentLevel = userDb.level;
       currentXp = userDb.xp;
+      currentRank = userDb.rank;
       activeTheme = userDb.theme;
     } else {
       currentLevel = Number(cached.level);
       currentXp = Number(cached.xp);
+      currentRank = cached.rank || '';
       const userDb = await this.prisma.client.user.findUnique({
         where: { id: userId },
-        select: { theme: true },
+        select: { theme: true, rank: true },
       });
       activeTheme = userDb?.theme as RankThemeType;
+      if (!currentRank && userDb?.rank) {
+        currentRank = userDb.rank;
+      }
     }
 
     // 2. Run the pure math calculator
@@ -68,7 +77,18 @@ export class GamificationService {
       rank: newRank,
     });
 
-    // 4. Flag the user as needing a database sync
+    // 4. Emit rank-up event if rank changed
+    if (currentRank && newRank && newRank !== currentRank) {
+      this.logger.log(
+        `User ${userId} ranked up from ${currentRank} to ${newRank}`,
+      );
+      this.eventEmitter.emit(
+        'user.rank.up',
+        new UserRankUpEvent(userId, newRank, Number(newLevel)),
+      );
+    }
+
+    // 5. Flag the user as needing a database sync
     await this.gamificationCache.markUserAsDirty(userId);
   }
 

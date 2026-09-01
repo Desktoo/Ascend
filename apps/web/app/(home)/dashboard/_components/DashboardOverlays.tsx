@@ -15,6 +15,7 @@ import {
 import { useObjectiveNewTasks } from "@/core/hooks/useObjective";
 import { submitSelfReflection } from "@/core/services/user/self-reflection";
 import useReflectionTrigger from "@/core/hooks/useReflectionTrigger";
+import NotificationOverlay from "./overlays/NotificationOverlay";
 
 export type ActiveModalType = "TASK" | "GOAL" | "HABIT" | "REFLECTION" | null;
 
@@ -136,6 +137,8 @@ export default function DashboardOverlays({
         activeGoals={activeGoals}
         onSubmitReflection={handleReflectionSubmit}
       />
+
+      <NotificationOverlay />
     </>
   );
 }

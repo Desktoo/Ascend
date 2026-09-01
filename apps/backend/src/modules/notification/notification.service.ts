@@ -156,4 +156,12 @@ export class NotificationService implements OnModuleInit {
 
     return prefs;
   }
+
+  async deleteNotification(userId: string, id: string) {
+    return this.notificationModel.deleteOne({ _id: id, userId });
+  }
+
+  async clearAll(userId: string) {
+    return this.notificationModel.deleteMany({ userId });
+  }
 }

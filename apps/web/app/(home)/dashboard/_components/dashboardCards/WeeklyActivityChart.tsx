@@ -10,27 +10,27 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-
-const data = [
-  { name: "Mon", tasks: 6, habits: 3 },
-  { name: "Tue", tasks: 8, habits: 4 },
-  { name: "Wed", tasks: 5, habits: 2 },
-  { name: "Thu", tasks: 9, habits: 5 },
-  { name: "Fri", tasks: 4, habits: 3 },
-  { name: "Sat", tasks: 2, habits: 1 },
-  { name: "Sun", tasks: 3, habits: 2 },
-];
+import { useWeeklyActivity } from "@/core/hooks/useWeeklyActivity";
 
 export default function WeeklyActivityChart() {
+  const { weeklyData, isLoading } = useWeeklyActivity();
+
   return (
     <div className="bg-white dark:bg-[#121214] border border-slate-200 dark:border-[#222226] rounded-2xl p-5 transition-colors duration-300 w-full h-[300px] flex flex-col">
-      <h2 className="text-sm font-medium text-slate-900 dark:text-white mb-4">
-        Weekly Activity
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-medium text-slate-900 dark:text-white">
+          Weekly Activity
+        </h2>
+        {isLoading && (
+          <span className="text-[10px] text-slate-400 animate-pulse font-mono">
+            Updating...
+          </span>
+        )}
+      </div>
       <div className="flex-1 w-full h-full min-h-0 text-xs">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={weeklyData}
             margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
           >
             <CartesianGrid

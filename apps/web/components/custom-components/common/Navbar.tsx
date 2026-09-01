@@ -42,7 +42,7 @@ export default function Navbar() {
         isVisible ? "translate-y-0" : "-translate-y-full"
       } ${
         isScrolled
-          ? "bg-[#06030c]/80 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+          ? "bg-[#08080a]/85 backdrop-blur-xl border-b border-zinc-800/50"
           : "bg-transparent"
       }`}
     >
@@ -52,42 +52,50 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative flex items-center justify-center w-6 h-6">
+          <div className="relative flex items-center justify-center w-5 h-5">
             <Image
               src="/logo.svg"
               alt="Ascend Logo"
-              width={22}
-              height={22}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+              width={20}
+              height={20}
+              className="w-full h-full object-contain"
             />
           </div>
-          <span className="text-white font-serif font-semibold text-sm tracking-wide group-hover:text-purple-200 transition-colors">
+          <span className="text-white font-medium text-sm tracking-tight">
             Ascend
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <ul className="hidden md:flex items-center gap-6 text-[11px] font-medium text-slate-300 uppercase tracking-wider">
+        <ul className="hidden md:flex items-center gap-6 text-xs font-medium text-zinc-400">
+          <li>
+            <Link
+              href="#problem"
+              className="hover:text-zinc-200 transition-colors"
+            >
+              The Problem
+            </Link>
+          </li>
           <li>
             <Link
               href="#features"
-              className="hover:text-purple-300 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-purple-500 hover:after:w-full after:transition-all"
+              className="hover:text-zinc-200 transition-colors"
             >
-              Core Pillars
+              Capabilities
             </Link>
           </li>
           <li>
             <Link
               href="#growth-engine"
-              className="hover:text-purple-300 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-purple-500 hover:after:w-full after:transition-all"
+              className="hover:text-zinc-200 transition-colors"
             >
-              Growth Engine
+              Compounding
             </Link>
           </li>
           <li>
             <Link
               href="#workflow"
-              className="hover:text-purple-300 transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-purple-500 hover:after:w-full after:transition-all"
+              className="hover:text-zinc-200 transition-colors"
             >
               Daily Workflow
             </Link>
@@ -95,20 +103,19 @@ export default function Navbar() {
         </ul>
 
         {/* Auth CTA Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/login"
-            className="text-[10px] sm:text-[11px] font-medium text-slate-300 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-purple-950/40"
+            className="text-xs font-medium text-zinc-400 hover:text-white transition-colors px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/40"
           >
             Sign In
           </Link>
           <Link
             href="/signup"
-            className="group relative inline-flex items-center gap-1 px-3 py-1.5 text-[10px] sm:text-[11px] font-semibold text-white bg-purple-700 hover:bg-purple-600 rounded-full shadow-[0_0_12px_rgba(126,34,206,0.35)] hover:shadow-[0_0_18px_rgba(168,85,247,0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-purple-700 hover:bg-purple-600 rounded-lg transition-colors"
           >
-            <Sparkles className="w-2.5 h-2.5 text-purple-200 group-hover:rotate-12 transition-transform" />
-            <span>Start Ascending</span>
-            <ArrowRight className="w-2.5 h-2.5 text-purple-200 group-hover:translate-x-0.5 transition-transform" />
+            <span>Get Started</span>
+            <ArrowRight className="w-3 h-3 text-purple-200" />
           </Link>
         </div>
       </nav>

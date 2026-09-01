@@ -1,5 +1,6 @@
 import Sidebar from "@/components/custom-components/common/Sidebar";
 import OnboardingGuard from "@/components/custom-components/gaurds/OnboardingGuard";
+import LiveNotificationManager from "@/core/services/notifications/LiveNotificationManager";
 import TimeZoneSync from "@/core/services/timeZoneSync";
 import { SWRConfig } from "swr";
 
@@ -41,6 +42,8 @@ export default function DashboardLayout({
 
           {/* Your vertical left sidebar component */}
           <Sidebar />
+
+          <LiveNotificationManager />
 
           {/* 2. Main content area container */}
           <div className="flex-1 flex flex-col min-w-0">

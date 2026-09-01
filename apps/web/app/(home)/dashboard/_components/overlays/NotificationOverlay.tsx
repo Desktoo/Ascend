@@ -2,36 +2,26 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, Clock, Trophy, Target, Bell, X, ChevronDown } from "lucide-react";
+import { CheckCircle2, Clock, Trophy, Target, Bell, X, ChevronDown, Loader2 } from "lucide-react";
 import { useModalStore } from "@/core/store/useModalStore";
+import { useNotifications } from "@/core/services/notifications/useNotification";
+
+// Tiny helper to show "2m ago", "1h ago"
+const getRelativeTime = (dateString: string) => {
+  const diff = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 60000);
+  if (diff < 1) return "Just now";
+  if (diff < 60) return `${diff}m ago`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
+  return `${Math.floor(diff / 1440)}d ago`;
+};
 
 export default function NotificationOverlay() {
   const { activeModal, closeModal } = useModalStore();
   const [activeTab, setActiveTab] = useState<"ALL" | "UNREAD">("ALL");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const [notifications, setNotifications] = useState([
-    {
-      _id: "1", type: "REMINDER", title: "Mid-Day Check-in",
-      body: "Time to update your daily reflection and log your habits. Taking a moment now ensures you maintain momentum for the rest of your day.",
-      isRead: false, createdAt: new Date(Date.now() - 1000 * 60 * 5), 
-    },
-    {
-      _id: "2", type: "RANK_UP", title: "Rank Unlocked!",
-      body: "You have been promoted to Advanced Developer. Keep up the consistent work and tackle more difficult objectives to reach the next tier.",
-      isRead: false, createdAt: new Date(Date.now() - 1000 * 60 * 60), 
-    },
-    {
-      _id: "3", type: "REMINDER", title: "Mid-Day Check-in",
-      body: "Time to update your daily reflection and log your habits. Taking a moment now ensures you maintain momentum for the rest of your day.",
-      isRead: false, createdAt: new Date(Date.now() - 1000 * 60 * 5), 
-    },
-    {
-      _id: "4", type: "RANK_UP", title: "Rank Unlocked!",
-      body: "You have been promoted to Advanced Developer. Keep up the consistent work and tackle more difficult objectives to reach the next tier.",
-      isRead: false, createdAt: new Date(Date.now() - 1000 * 60 * 60), 
-    }
-  ]);
+  // Hooking up the real data service!
+  const { notifications, isLoading, removeNotification, clearAllNotifications } = useNotifications();
 
   if (activeModal !== "NOTIFICATION") return null;
 
@@ -50,35 +40,16 @@ export default function NotificationOverlay() {
 
   const handleToggle = (id: string) => {
     setExpandedId(prev => prev === id ? null : id);
-    setNotifications((prev) => 
-      prev.map((notif) => notif._id === id ? { ...notif, isRead: true } : notif)
-    );
+    // (Optional) Call a mark-as-read API here if you want to track read state
   };
 
-  // 🎯 THE DELETION LOGIC
   const handleDelete = (e: React.MouseEvent, id: string) => {
-    // 1. Stop the click from triggering the accordion expansion
     e.stopPropagation(); 
-    
-    // 2. Instantly remove from UI (Optimistic Update)
-    setNotifications((prev) => prev.filter((n) => n._id !== id));
-    
-    // 3. Fire the backend call to delete from Mongo
-    // await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
-    // OR if using SWR: triggerDelete(id);
-  };
-
-  const handleClearAll = () => {
-    // 1. Instantly clear UI
-    setNotifications([]);
-    
-    // 2. Tell backend to wipe all notifications for this user
-    // await fetch('/api/notifications/clear-all', { method: 'DELETE' });
+    removeNotification(id);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
-      
       <div className="absolute inset-0 bg-transparent cursor-pointer" onClick={closeModal} />
 
       <div className="relative w-full max-w-sm rounded-2xl bg-[#121214] border border-slate-800 shadow-2xl overflow-hidden animate-in slide-in-from-right-12 fade-in duration-200 flex flex-col h-[90vh] max-h-[90vh]">
@@ -117,7 +88,12 @@ export default function NotificationOverlay() {
 
         {/* Notification List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          {filteredNotifications.length === 0 ? (
+          {isLoading ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-500">
+              <Loader2 className="w-6 h-6 animate-spin mb-2 text-slate-600" />
+              <p className="text-xs">Loading notifications...</p>
+            </div>
+          ) : filteredNotifications.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm">
               <CheckCircle2 className="w-10 h-10 text-slate-700 mb-3" />
               <p>You&apos;re all caught up!</p>
@@ -135,12 +111,10 @@ export default function NotificationOverlay() {
                       !notif.isRead ? "bg-[#818CF8]/5" : ""
                     }`}
                   >
-                    
-                    
-                    {/* 🎯 THE 'X' BUTTON (Fades in on hover) */}
+                    {/* The X Button */}
                     <button
                       onClick={(e) => handleDelete(e, notif._id)}
-                      className="absolute -top-1.5 border bg-white/50 -right-0.5 p-0.5 rounded-full text-slate-900 opacity-0 group-hover:opacity-100 hover:bg-white/10 hover:text-slate-300 transition-all"
+                      className="absolute -top-1.5 border bg-white/50 -right-0.5 p-0.5 rounded-full text-slate-900 opacity-0 group-hover:opacity-100 hover:bg-white/10 hover:text-slate-300 transition-all z-10"
                       title="Remove notification"
                     >
                       <X className="w-3 h-3" />
@@ -152,16 +126,14 @@ export default function NotificationOverlay() {
                       </div>
                     </div>
 
-                    <div className="flex-1 min-w-0 pr-6"> {/* Added pr-6 so text doesn't overlap the X */}
+                    <div className="flex-1 min-w-0 pr-6">
                       <div className="flex justify-between items-start mb-0.5">
                         <p className="text-sm font-medium text-slate-200 truncate pr-2">
                           {notif.title}
                         </p>
-                        
-                        {/* Time & Accordion Arrow */}
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[11px] text-slate-500 whitespace-nowrap mt-0.5">
-                            1h ago
+                            {getRelativeTime(notif.createdAt)}
                           </span>
                           <ChevronDown 
                             className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} 
@@ -185,8 +157,8 @@ export default function NotificationOverlay() {
         {/* Footer Controls */}
         <div className="p-4 border-t border-slate-800/60 flex items-center justify-center shrink-0 bg-zinc-950/20">
           <button 
-            onClick={handleClearAll}
-            className="h-9 px-4 text-slate-500 hover:text-slate-400  rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-2 w-full"
+            onClick={clearAllNotifications}
+            className="h-9 px-4 text-slate-500 hover:text-slate-400 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-2 w-full"
           >
             <X className="w-4 h-4" />
             Clear all notifications
