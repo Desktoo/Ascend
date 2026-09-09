@@ -14,12 +14,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    // "paths": {
-    //   "@src/.": ["./src/*"],
-    //   "@day-mark/db": ["../../packages/core/db/src/index.ts"],
-    //   "@day-mark/db/types": ["../../packages/core/db/src/types/model-types.ts"],
-    //   "@day-mark/config": ["../../packages/core/config/src/index.ts"]
-    // },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -27,6 +21,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    // "ignoreDeprecations": "6.0"
+    "types": ["vitest", "node"]
   }
 }

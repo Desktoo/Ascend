@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import { Camera, Loader2 } from "lucide-react";
 
@@ -10,7 +10,9 @@ interface ProfileHeaderProps {
   level: number;
   rank: string;
   isSaveDisabled: boolean;
-  isUpdating?: boolean; // Added loading state prop
+  isUpdating?: boolean;
+  onAvatarSelect?: (file: File) => void;
+  previewUrl?: string | null;
 }
 
 export default function ProfileHeader({
@@ -20,8 +22,21 @@ export default function ProfileHeader({
   rank,
   isSaveDisabled,
   isUpdating = false,
+  onAvatarSelect,
+  previewUrl,
 }: ProfileHeaderProps) {
   const isDisabled = isSaveDisabled || isUpdating;
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAvatarSelect) {
+      onAvatarSelect(file);
+    }
+  };
+
+  const displayAvatar = previewUrl || avatarUrl || "/images/photo-test.jpg";
 
   return (
     <div className="space-y-6 pb-6 border-b border-zinc-800/80">
@@ -62,12 +77,20 @@ export default function ProfileHeader({
           <Image
             width={64}
             height={64}
-            src={avatarUrl || "/images/photo-test.jpg"}
+            src={displayAvatar}
             alt={userName}
             className="w-16 h-16 rounded-full object-cover bg-zinc-900 border border-zinc-800"
           />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
           <button
             type="button"
+            onClick={() => fileInputRef.current?.click()}
             className="absolute -bottom-1 -right-1 p-1 bg-purple-600 rounded-full text-white hover:bg-purple-500 transition-all shadow-sm"
           >
             <Camera className="w-3.5 h-3.5" />

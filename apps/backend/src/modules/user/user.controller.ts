@@ -9,7 +9,10 @@ import {
   UseGuards,
   Post,
   NotFoundException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   AuthGaurd,
   type AuthenticatedRequest,
@@ -79,14 +82,16 @@ export class UserController {
   }
 
   @Patch('update-profile')
+  @UseInterceptors(FileInterceptor('avatar'))
   async updateProfile(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProfileDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
     // Extract authenticated user ID from request context (e.g. JWT payload)
     const userId = req.user.userId;
 
-    return await this.userService.updateProfile(userId, dto);
+    return await this.userService.updateProfile(userId, dto || {}, file);
   }
 
   @Patch('change-password')

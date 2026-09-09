@@ -21,6 +21,7 @@ import {
   CachedCoreProfile,
   UserCacheRepository,
 } from './repos/user-cache.repo';
+import { StorageService, ValidUploadFile } from '../storage/storage.service';
 
 @Injectable()
 export class UserService {
@@ -30,6 +31,7 @@ export class UserService {
     private readonly dynamoDbService: DynamoDbService,
     private readonly userCache: UserCacheRepository,
     private readonly redis: RedisCacheService,
+    private readonly storageService: StorageService,
   ) {}
 
   async createUserProfile(
@@ -38,7 +40,14 @@ export class UserService {
     userName: string,
     timeZone: string,
     avatarUrl?: string | null,
+    avatarFile?: ValidUploadFile,
   ) {
+    let finalAvatarUrl = avatarUrl || null;
+
+    if (avatarFile) {
+      finalAvatarUrl = await this.storageService.uploadAvatar(avatarFile);
+    }
+
     const existingUser = await tx.user.findFirst({
       where: { OR: [{ email }, { userName }] },
     });
@@ -52,7 +61,7 @@ export class UserService {
         email,
         userName,
         timeZone: timeZone,
-        avatar_url: avatarUrl || null,
+        avatar_url: finalAvatarUrl,
         notificationPreference: {
           create: {
             webPushEnabled: true,
@@ -302,19 +311,51 @@ export class UserService {
     }
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto) {
+  async updateProfile(userId: string, dto: UpdateProfileDto, avatarFile?: ValidUploadFile) {
     try {
-      return await this.prisma.client.user.update({
+      let finalAvatarUrl: string | undefined;
+
+      if (avatarFile) {
+        const currentUser = await this.prisma.client.user.findUnique({
+          where: { id: userId },
+          select: { avatar_url: true },
+        });
+
+        finalAvatarUrl = await this.storageService.updateAvatar(
+          avatarFile,
+          currentUser?.avatar_url || undefined,
+        );
+      }
+
+      const updateData: any = { ...dto };
+      if (finalAvatarUrl) {
+        updateData.avatar_url = finalAvatarUrl;
+      }
+
+      const updatedUser = await this.prisma.client.user.update({
         where: { id: userId },
-        data: dto, // Prisma automatically ignores undefined keys in DTO
+        data: updateData,
         select: {
           id: true,
           userName: true,
           email: true,
           dayStartTime: true,
+          avatar_url: true,
           updatedAt: true,
         },
       });
+
+      const existingCache = await this.userCache.getCoreProfile(userId);
+      if (existingCache) {
+        await this.userCache.setCoreProfile(userId, {
+          ...existingCache,
+          ...(dto?.userName && { userName: dto.userName }),
+          ...(dto?.dayStartTime && { dayStartTime: dto.dayStartTime }),
+          ...(finalAvatarUrl && { avatarUrl: finalAvatarUrl }),
+        });
+      }
+
+      return updatedUser;
     } catch (error) {
       console.error(
         '[UserService Error] Failed to update user profile:',

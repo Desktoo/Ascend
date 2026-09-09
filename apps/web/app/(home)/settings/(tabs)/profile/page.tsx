@@ -17,6 +17,10 @@ export interface ProfileFormValues {
 export default function BasicProfilePage() {
   // 1. All hooks called unconditionally at the top level
   const { user, isLoading } = useUserProfile();
+  
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -44,9 +48,16 @@ export default function BasicProfilePage() {
           email: updatedUser.email,
           dayStartTime: updatedUser.dayStartTime,
         });
+        setAvatarFile(null);
+        setAvatarPreview(null);
       },
     }
   );
+
+  const handleAvatarSelect = (file: File) => {
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
 
   const onSubmit = async (data: ProfileFormValues) => {
     const updatedFields = Object.keys(dirtyFields).reduce((acc, key) => {
@@ -55,10 +66,23 @@ export default function BasicProfilePage() {
       return acc;
     }, {} as Partial<ProfileFormValues>);
 
-    if (Object.keys(updatedFields).length === 0) return;
+    // Prevent submission if no text fields changed AND no avatar was selected
+    if (Object.keys(updatedFields).length === 0 && !avatarFile) return;
 
     try {
-      await updateProfile(updatedFields);
+      if (avatarFile) {
+        // If there's an avatar file, we MUST use FormData
+        const formData = new FormData();
+        Object.entries(updatedFields).forEach(([key, value]) => {
+          formData.append(key, value as string);
+        });
+        formData.append("avatar", avatarFile);
+        
+        await updateProfile(formData);
+      } else {
+        // Fallback to simple JSON payload if only text changed
+        await updateProfile(updatedFields);
+      }
     } catch (error) {
       console.error("Failed to update profile:", error);
     }
@@ -82,10 +106,12 @@ export default function BasicProfilePage() {
       <ProfileHeader
         rank={user.rank}
         userName={user.userName}
-        avatarUrl={ "/images/user-logo.png"}
+        avatarUrl={user.avatar_url || "/images/user-logo.png"}
         level={user.level}
-        isSaveDisabled={!isDirty || !isValid}
+        isSaveDisabled={(!isDirty && !avatarFile) || !isValid}
         isUpdating={isUpdating}
+        onAvatarSelect={handleAvatarSelect}
+        previewUrl={avatarPreview}
       />
 
       <ProfileFormFields register={register} errors={errors} />

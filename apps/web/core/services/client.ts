@@ -24,9 +24,10 @@ export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const defaultHeaders = {
-    "Content-Type": "application/json",
-  };
+  const isFormData = options.body instanceof FormData;
+  const defaultHeaders: HeadersInit = isFormData 
+    ? {} 
+    : { "Content-Type": "application/json" };
 
   const config: RequestInit = {
     ...options,

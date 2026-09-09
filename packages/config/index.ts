@@ -25,6 +25,13 @@ const envSchema = z.object({
   MONGODB_URI: z.string(),
   VAPID_PUBLIC_KEY: z.string(),
   VAPID_PRIVATE_KEY: z.string(),
+  OCI_TENANCY: z.string(),
+  OCI_USER: z.string(),
+  OCI_FINGERPRINT: z.string(),
+  OCI_REGION: z.string(),
+  OCI_NAMESPACE: z.string(),
+  OCI_BUCKET_NAME: z.string(),
+  OCI_PRIVATE_KEY: z.string(),
 })
 
 const __filename = fileURLToPath(import.meta.url);
@@ -34,7 +41,7 @@ const rootEnvPath = path.resolve(__dirname, "../../.env");
 
 dotenv.config({
   path: rootEnvPath,
-  override: true,
+  override: false,
 });
 
 

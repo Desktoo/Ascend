@@ -17,6 +17,7 @@ import { GamificationModule } from './common/gamification/gamification.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { LocalRedisModule } from './common/local-redis/local-redis.module';
 import { MongoDatabaseModule } from './common/database/mongo-database.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { MongoDatabaseModule } from './common/database/mongo-database.module';
     QueueModule,
     LocalRedisModule,
     NotificationModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService, HabitLogService],
