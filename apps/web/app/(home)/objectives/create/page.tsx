@@ -20,7 +20,8 @@ export default function CreateObjectivePage() {
   // Handle server sync pipelines exclusively using SWR mutation primitives
   const { trigger: submitToServer, isMutating } = useSWRMutation(
     "/goals",
-    objectiveService.createObjective
+    objectiveService.createObjective,
+    { throwOnError: true }
   );
 
   const methods = useForm<CreateObjectiveFormState>({

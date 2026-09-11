@@ -8,12 +8,15 @@
     "start": "next start -p 3001",
     "lint": "eslint",
     "test": "vitest run --environment jsdom",
-    "test:watch": "vitest --environment jsdom"
+    "test:watch": "vitest --environment jsdom",
+    "test:unit": "vitest run \"src/**/*.spec.ts\" \"app/**/*.spec.ts\" --environment jsdom",
+    "test:int": "vitest run int.spec --environment jsdom"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.9.1",
     "@lottiefiles/dotlottie-react": "^0.19.4",
+    "@testing-library/user-event": "^14.6.7",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -43,6 +46,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
