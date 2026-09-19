@@ -7,6 +7,7 @@ import ProfileHeader from "./_components/Header";
 import ProfileFormFields from "./_components/ProfileFormFields";
 import { userService } from "@/core/services/user/update-profile";
 import useUserProfile from "@/core/hooks/useUserProfile";
+import { toast } from "sonner";
 
 export interface ProfileFormValues {
   userName: string;
@@ -84,6 +85,7 @@ export default function BasicProfilePage() {
         await updateProfile(updatedFields);
       }
     } catch (error) {
+      toast.error("Failed to update profile. Please try again.");
       console.error("Failed to update profile:", error);
     }
   };
@@ -97,6 +99,8 @@ export default function BasicProfilePage() {
     );
   }
 
+  console.log("Rendering BasicProfilePage with user:", user);
+
   // 3. Render Form Component
   return (
     <form
@@ -106,7 +110,7 @@ export default function BasicProfilePage() {
       <ProfileHeader
         rank={user.rank}
         userName={user.userName}
-        avatarUrl={user.avatar_url || "/images/user-logo.png"}
+        avatarUrl={user.avatarUrl || "/images/user-logo.png"}
         level={user.level}
         isSaveDisabled={(!isDirty && !avatarFile) || !isValid}
         isUpdating={isUpdating}

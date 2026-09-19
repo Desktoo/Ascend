@@ -13,6 +13,7 @@ import Step3Execution, { PriorityType } from "./_components/Step3Execution";
 
 import { habitService } from "@/core/services/habits/habits.service";
 import { HabitDto } from "@/core/types/habits.types";
+import { toast } from "sonner";
 
 export interface HabitFormValues {
   title: string;
@@ -93,6 +94,7 @@ export default function CreateHabitPage() {
       await submitToServer(payload);
       router.push("/dashboard");
     } catch (error) {
+      toast.error("Failed to activate habit blueprint. Please try again.");
       console.error("Failed to activate habit blueprint:", error);
     }
   };

@@ -35,12 +35,17 @@ export default function LoginCard() {
   const formValues = watch();
 
   const handleKeystrokeWarming = () => {
-    if (!hasWarmed && (formValues.identifier.length > 0 || formValues.password.length > 0)) {
+    if (
+      !hasWarmed &&
+      (formValues.identifier.length > 0 || formValues.password.length > 0)
+    ) {
       setHasWarmed(true);
-      console.log("First keystroke detected! Sending silent warming ping to DB");
+      console.log(
+        "First keystroke detected! Sending silent warming ping to DB",
+      );
 
       apiClient("/health/warm", { method: "GET" }).catch((err) =>
-        console.log("Warming bypass:", err)
+        console.log("Warming bypass:", err),
       );
     }
   };
@@ -48,17 +53,21 @@ export default function LoginCard() {
   const triggerWarming = () => {
     if (!hasWarmed) {
       setHasWarmed(true);
-      console.log("Mouse hovered over social login! Warming Neon DB in background...");
+      console.log(
+        "Mouse hovered over social login! Warming Neon DB in background...",
+      );
 
       apiClient("/health/warm", { method: "GET" }).catch((error) =>
-        console.error("Silent DB warm-up failed:", error)
+        console.error("Silent DB warm-up failed:", error),
       );
     }
   };
 
   // 2. Refactored Submit Handler using React Hook Form & apiClient
-  const onFormSubmit = async (data: any) => {
-
+  const onFormSubmit = async (data: {
+    identifier: string;
+    password: string;
+  }) => {
     console.log("Sign in payload:", data);
 
     try {
@@ -69,11 +78,11 @@ export default function LoginCard() {
 
       console.log("Login verified. Session active:", responseData);
       toast.success("Welcome back to Ascend!");
-      
+
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Authentication failed:", error);
-      toast.error(error.message || "Invalid credentials. Please try again.");
+      toast.error("Invalid credentials. Please try again.");
     }
   };
 
@@ -81,7 +90,6 @@ export default function LoginCard() {
     <div className="w-full flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-white/30">
       {/* The Glass Canvas: A perfectly proportioned split card */}
       <div className="flex flex-col lg:flex-row w-full max-w-225 rounded-[2rem] overflow-hidden bg-white/2 border border-white/5 shadow-[0_24px_40px_-12px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-        
         {/* ── Left Side: Brand & Story (Image + Text) ── */}
         <div className="relative flex flex-col justify-between w-full lg:w-5/12 p-6 lg:p-10 overflow-hidden">
           {/* Background Image with Overlay */}
@@ -159,9 +167,9 @@ export default function LoginCard() {
               </p>
             </div>
 
-            <form 
-              onSubmit={handleSubmit(onFormSubmit)} 
-              onChange={handleKeystrokeWarming} 
+            <form
+              onSubmit={handleSubmit(onFormSubmit)}
+              onChange={handleKeystrokeWarming}
               className="space-y-4"
             >
               {/* Email/Username Input Field */}
@@ -279,7 +287,6 @@ export default function LoginCard() {
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );

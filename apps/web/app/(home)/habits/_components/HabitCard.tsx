@@ -2,14 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Target,
   MoreVertical,
   Trash2,
   Pause,
   Play,
-  Flame,
   ArrowUpRight,
-  CheckCircle2,
 } from "lucide-react";
 import { gsap } from "gsap";
 
@@ -27,6 +24,7 @@ import {
 import Link from "next/link";
 import { useHabitDetails } from "@/core/hooks/useHabits";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface HabitsCardProps {
   id: string;
@@ -38,7 +36,6 @@ interface HabitsCardProps {
   onNavigateDetail?: (id: string) => void;
 }
 
-const TRACK_LENGTH = 8;
 
 export default function HabitsCard({
   id,
@@ -117,6 +114,7 @@ export default function HabitsCard({
       setShowMenu(false);
       await toggleHabitState();
     } catch (err) {
+      toast.error("Failed to update habit state. Please try again.");
       console.error("Failed to mutate active tracking state status metric updates:", err);
     }
   };

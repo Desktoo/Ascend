@@ -311,7 +311,11 @@ export class UserService {
     }
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto, avatarFile?: ValidUploadFile) {
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+    avatarFile?: ValidUploadFile,
+  ) {
     try {
       let finalAvatarUrl: string | undefined;
 
@@ -327,7 +331,7 @@ export class UserService {
         );
       }
 
-      const updateData: any = { ...dto };
+      const updateData: Prisma.UserUpdateInput = { ...dto };
       if (finalAvatarUrl) {
         updateData.avatar_url = finalAvatarUrl;
       }

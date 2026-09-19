@@ -13,6 +13,12 @@ import { apiClient } from "@/core/services/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+type SignUpFormData = {
+  userName: string;
+  email: string;
+  password: string;
+};
+
 export default function SignUpCard() {
   const [hasWarmed, setHasWarmed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +30,7 @@ export default function SignUpCard() {
     handleSubmit,
     formState: { isSubmitting },
     watch,
-  } = useForm({
+  } = useForm<SignUpFormData>({
     defaultValues: {
       userName: "",
       email: "",
@@ -67,7 +73,7 @@ export default function SignUpCard() {
   };
 
   // 2. Refactored Submit Handler using React Hook Form & apiClient
-  const onFormSubmit = async (data: any) => {
+  const onFormSubmit = async (data: SignUpFormData) => {
     const currentDeviceTimeZone =
       Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -94,9 +100,9 @@ export default function SignUpCard() {
       toast.success("Account created successfully!");
 
       router.push("/onboarding");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Sign up execution failed:", error);
-      toast.error("Failed to create the user");
+      toast.error("Failed to create the user, Try again later.");
     }
   };
 

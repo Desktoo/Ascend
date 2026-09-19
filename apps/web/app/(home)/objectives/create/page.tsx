@@ -13,6 +13,7 @@ import TimelineStepper from "./_components/TimelineStepper";
 import { CreateObjectiveFormState } from "./types/create-habit.types";
 import { objectiveService } from "@/core/services/objectives/objective.service";
 import { GoalDto } from "@/core/types/objective.types";
+import { toast } from "sonner";
 
 export default function CreateObjectivePage() {
   const router = useRouter();
@@ -105,6 +106,7 @@ export default function CreateObjectivePage() {
       await submitToServer(payload);
       router.push("/dashboard");
     } catch (error) {
+      toast.error("Failed to execute objective deployment sequence. Please try again.");
       console.error("Failed to execute objective deployment sequence:", error);
     }
   };

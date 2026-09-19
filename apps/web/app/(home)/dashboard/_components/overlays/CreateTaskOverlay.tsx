@@ -10,6 +10,7 @@ import useSWRMutation from "swr/mutation";
 import { taskService } from "@/core/services/tasks/tasks.service";
 import { useSWRConfig } from "swr";
 import { Task } from "@/core/hooks/useDashboardTasks";
+import { toast } from "sonner";
 
 interface TaskFormInputs {
   title: string;
@@ -97,6 +98,7 @@ export default function CreateTaskOverlay({
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Submission failed";
       setSubmitError(msg);
+      toast.error("Failed to create task. Please try again.");
     }
   };
 

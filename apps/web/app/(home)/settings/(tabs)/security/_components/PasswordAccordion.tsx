@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
-import { Lock, ChevronDown, KeyRound, Loader2 } from "lucide-react";
+import { Lock, ChevronDown, Loader2 } from "lucide-react";
 import PasswordFields from "./PasswordFields";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 import { ChangePasswordValues } from "@/core/types/user.types";
 import { securityService } from "@/core/services/user/change-password";
 import useUserProfile from "@/core/hooks/useUserProfile";
 import OAuthWarningBanner from "./OAuthWarningBanner";
+import { toast } from "sonner";
 
 export default function PasswordAccordion() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +20,6 @@ export default function PasswordAccordion() {
     handleSubmit,
     watch,
     reset,
-    setError,
     formState: { errors, isValid },
   } = useForm<ChangePasswordValues>({
     mode: "onChange",
@@ -61,10 +61,9 @@ export default function PasswordAccordion() {
       await changePassword(data);
       reset();
       setIsOpen(false);
-    } catch (error: any) {
-      // Map API Error (e.g. Current password is incorrect) to input field
-      const message = error?.message || "Failed to update password";
-      setError("currentPassword", { message });
+    } catch (error) {
+      toast.error("Failed to change password. Please try again.");
+      console.error("Failed to change password:", error);
     }
   };
 

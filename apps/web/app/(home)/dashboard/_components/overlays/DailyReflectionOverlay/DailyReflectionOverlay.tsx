@@ -12,6 +12,7 @@ import {
 import { ReflectionStep } from "./ReflectionStep";
 import { GoalTaskStep } from "./GoalTaskStep";
 import useUserProfile from "@/core/hooks/useUserProfile";
+import { toast } from "sonner";
 
 interface DailyReflectionOverlayProps {
   isOpen: boolean;
@@ -126,6 +127,7 @@ export default function DailyReflectionOverlay({
       onClose();
     } catch (error) {
       console.error("Failed to submit reflection wizard:", error);
+      toast.error("Failed to submit reflection. Please try again.");
     } finally {
       setIsSubmitting(false);
       onClose();

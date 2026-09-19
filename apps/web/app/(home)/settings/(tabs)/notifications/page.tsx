@@ -6,6 +6,7 @@ import { clientEnv } from "../../../../../../../packages/config/client";
 import { PushNotificationService } from '@/core/services/notifications/push.service';
 import { NotificationPreferencesService } from '@/core/services/notifications/preference.service';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 export default function NotificationsPage() {
   const [masterEnabled, setMasterEnabled] = useState(true);
@@ -21,6 +22,7 @@ export default function NotificationsPage() {
     try {
       await NotificationPreferencesService.updatePreferences({ masterNotification: checked });
     } catch (error) {
+      toast.error("Failed to update master notification preference. Please try again.");
       console.error('Failed to update master notification preference:', error);
       setMasterEnabled(!checked); // Revert on error
     }
@@ -35,6 +37,7 @@ export default function NotificationsPage() {
         try {
           await NotificationPreferencesService.updatePreferences({ webPushEnabled: true });
         } catch (error) {
+          toast.error("Failed to update web push preference. Please try again.");
           console.error('Failed to update web push preference:', error);
         }
       } else {
@@ -45,6 +48,7 @@ export default function NotificationsPage() {
       try {
         await NotificationPreferencesService.updatePreferences({ webPushEnabled: false });
       } catch (error) {
+        toast.error("Failed to disable web push notifications. Please try again.");
         console.error('Failed to disable web push preference:', error);
         setDesktopEnabled(true); // Revert on error
       }
@@ -57,6 +61,7 @@ export default function NotificationsPage() {
     try {
       await NotificationPreferencesService.updatePreferences({ midDayReminder: checked });
     } catch (error) {
+      toast.error("Failed to update mid-day reminder preference. Please try again.");
       console.error('Failed to update mid-day reminder preference:', error);
       setMidDayReminder(!checked); // Revert on error
     }

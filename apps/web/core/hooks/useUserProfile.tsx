@@ -5,7 +5,7 @@ export interface UserProfile {
   id: string;
   userName: string;
   email: string;
-  avatar_url: string | null;
+  avatarUrl: string | null;
   rank: string;
   dayStartTime: string;
   level: number;

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { AlertCircle, ArrowRight, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface AbandonedTasksOverlayProps {
   tasks: Array<{ id: string; title: string }>;
@@ -29,6 +30,7 @@ export default function AbandonedTasksOverlay({
       await onRescue(targetIds);
     } catch (err) {
       console.error("Rescue mutation error:", err);
+      toast.error("Failed to migrate tasks. Please try again.");
     } finally {
       setIsRescuing(false);
     }
@@ -41,6 +43,7 @@ export default function AbandonedTasksOverlay({
       await onPurge(targetIds);
     } catch (err) {
       console.error("Purge mutation error:", err);
+      toast.error("Failed to discard tasks. Please try again.");
     } finally {
       setIsPurging(false);
     }

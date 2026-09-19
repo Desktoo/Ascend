@@ -55,9 +55,12 @@ export default function Sidebar() {
     const storedTheme = localStorage.getItem("theme");
     const root = document.documentElement;
 
+    console.log("user profile in sidebar", user);
+
     if (
       storedTheme === "light" ||
-      (!storedTheme && window.matchMedia("(prefers-color-scheme: light)").matches)
+      (!storedTheme &&
+        window.matchMedia("(prefers-color-scheme: light)").matches)
     ) {
       setTheme("light");
       root.classList.remove("dark");
@@ -98,11 +101,17 @@ export default function Sidebar() {
     <>
       <aside
         ref={sidebarRef}
-        style={{ width: isCollapsed ? 72 : 240, paddingLeft: isCollapsed ? 12 : 20, paddingRight: isCollapsed ? 12 : 20 }}
+        style={{
+          width: isCollapsed ? 72 : 240,
+          paddingLeft: isCollapsed ? 12 : 20,
+          paddingRight: isCollapsed ? 12 : 20,
+        }}
         className="hidden md:flex flex-col h-screen sticky top-0 bg-white dark:bg-[#0A0A0C] border-r border-slate-200 dark:border-[#222226] py-5 selection:bg-[#818CF8]/30 overflow-y-auto overflow-x-hidden"
       >
         {/* ── Top Section: Logo ── */}
-        <div className={`mb-8 flex items-center h-8 relative ${isCollapsed ? "justify-center" : "justify-between"}`}>
+        <div
+          className={`mb-8 flex items-center h-8 relative ${isCollapsed ? "justify-center" : "justify-between"}`}
+        >
           {!isCollapsed && (
             <>
               <Link href="/" className="flex items-center gap-2.5 group w-max">
@@ -136,9 +145,16 @@ export default function Sidebar() {
           {isCollapsed && (
             <div className="relative group/logo cursor-pointer flex items-center justify-center w-8 h-8">
               <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 group-hover/logo:opacity-0">
-                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50/50 dark:bg-black/20 border border-indigo-200/50 dark:border-white/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.2)] dark:shadow-[0_0_15px_rgba(168,85,247,0.2)] overflow-hidden">
-                   <Image src="/logo.svg" priority alt="Ascend Logo" fill unoptimized className="object-contain px-2 py-0.5" />
-                 </div>
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50/50 dark:bg-black/20 border border-indigo-200/50 dark:border-white/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.2)] dark:shadow-[0_0_15px_rgba(168,85,247,0.2)] overflow-hidden">
+                  <Image
+                    src="/logo.svg"
+                    priority
+                    alt="Ascend Logo"
+                    fill
+                    unoptimized
+                    className="object-contain px-2 py-0.5"
+                  />
+                </div>
               </div>
               <button
                 onClick={() => setIsCollapsed(false)}
@@ -154,14 +170,17 @@ export default function Sidebar() {
         {/* ── Middle Section: Vertical Navigation ── */}
         <nav className="flex flex-col gap-1.5 flex-1">
           {navItems.map((item) => {
-            const isActive = currentPath === item.href || currentPath.startsWith(item.href);
+            const isActive =
+              currentPath === item.href || currentPath.startsWith(item.href);
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 title={isCollapsed ? item.name : undefined}
                 className={`flex items-center ${
-                  isCollapsed ? "justify-center w-8 h-8 mx-auto" : "gap-3 px-3 py-2"
+                  isCollapsed
+                    ? "justify-center w-8 h-8 mx-auto"
+                    : "gap-3 px-3 py-2"
                 } rounded-lg text-xs font-medium transition-colors ${
                   isActive
                     ? "bg-linear-to-tr from-[#6366F1] to-[#A855F7] text-white shadow-md shadow-[#A855F7]/20"
@@ -169,7 +188,11 @@ export default function Sidebar() {
                 }`}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
-                {!isCollapsed && <span className="tracking-wide font-semibold">{item.name}</span>}
+                {!isCollapsed && (
+                  <span className="tracking-wide font-semibold">
+                    {item.name}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -184,12 +207,16 @@ export default function Sidebar() {
                 className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative overflow-hidden w-4 h-4 flex items-center justify-center"
                 title="Toggle Theme"
               >
-                <Sun className={`absolute w-4 h-4 transition-all duration-500 ease-in-out ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
-                <Moon className={`absolute w-4 h-4 transition-all duration-500 ease-in-out ${theme === "light" ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-50"}`} />
+                <Sun
+                  className={`absolute w-4 h-4 transition-all duration-500 ease-in-out ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`}
+                />
+                <Moon
+                  className={`absolute w-4 h-4 transition-all duration-500 ease-in-out ${theme === "light" ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-50"}`}
+                />
               </button>
 
               {/* Collapsed view Logout trigger using Dialog uncontrolled open wrapper */}
-              <button 
+              <button
                 onClick={() => setIsLogoutOpen(true)}
                 className="text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
                 title="Disconnect Session"
@@ -203,21 +230,21 @@ export default function Sidebar() {
                 <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Search className="w-3.5 h-3.5" />
                 </button>
-                {/* <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative">
-                  <Bell className="w-3.5 h-3.5" />
-                  <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-[#818CF8] rounded-full" />
-                </button> */}
                 <NotificationTrigger />
                 <button
                   onClick={toggleTheme}
                   className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative overflow-hidden w-3.5 h-3.5 flex items-center justify-center"
                   title="Toggle Theme"
                 >
-                  <Sun className={`absolute w-3.5 h-3.5 transition-all duration-500 ease-in-out ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
-                  <Moon className={`absolute w-3.5 h-3.5 transition-all duration-500 ease-in-out ${theme === "light" ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-50"}`} />
+                  <Sun
+                    className={`absolute w-3.5 h-3.5 transition-all duration-500 ease-in-out ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`}
+                  />
+                  <Moon
+                    className={`absolute w-3.5 h-3.5 transition-all duration-500 ease-in-out ${theme === "light" ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-50"}`}
+                  />
                 </button>
               </div>
-              
+
               {/* Expanded view Logout trigger */}
               <button
                 onClick={() => setIsLogoutOpen(true)}
@@ -237,11 +264,30 @@ export default function Sidebar() {
                 : "gap-2.5 bg-slate-50 dark:bg-[#121214] border border-slate-200 dark:border-[#222226] p-1.5"
             } rounded-lg transition-all duration-300`}
           >
-            <div className="relative w-8 h-8 shrink-0 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#A855F7] flex items-center justify-center p-0.5 shadow-sm">
-              <div className="w-full h-full bg-white dark:bg-[#0A0A0C] rounded-full flex items-center justify-center font-bold text-[10px] text-slate-900 dark:text-white transition-colors duration-300">
-                A
+            {user?.avatarUrl ? (
+              <div className="relative w-7 h-7 shrink-0 rounded-full overflow-hidden bg-white dark:bg-[#0A0A0C] shadow-sm">
+                <Image
+                  src={user.avatarUrl}
+                  alt={user?.userName || "Avatar"}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
               </div>
-            </div>
+            ) : (
+              <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-[10px] text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#121214] border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                {user?.userName?.[0]?.toUpperCase() ?? (
+                  <Image
+                    src="/images/user-logo.png"
+                    alt="Default Avatar"
+                    width={28}
+                    height={28}
+                    unoptimized
+                    className="object-cover rounded-full" 
+                  />
+                )}
+              </div>
+            )}
 
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
@@ -265,7 +311,9 @@ export default function Sidebar() {
               Disconnect Session
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-              Are you sure you want to log out of Ascend? Your current data loops are secured, but you will need to re-authenticate to sync progress.
+              Are you sure you want to log out of Ascend? Your current data
+              loops are secured, but you will need to re-authenticate to sync
+              progress.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-row bg-transparent items-center justify-end gap-2 mt-4">

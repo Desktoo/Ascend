@@ -16,11 +16,11 @@ export default function NotFound() {
         </p>
         <div className="pt-2">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-medium transition-all"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Home</span>
+            <span>Back to Dashboard</span>
           </Link>
         </div>
       </div>

@@ -22,13 +22,10 @@ import {
   getXpRequiredForNextLevel,
   TASK_XP,
 } from "@/core/utils/xp-rules";
+import { toast } from "sonner";
 
 type SortOption =
-  | "PRIORITY_DESC"
-  | "PRIORITY_ASC"
-  | "TIME_ASC"
-  | "TIME_DESC"
-  | "DEFAULT";
+  "PRIORITY_DESC" | "PRIORITY_ASC" | "TIME_ASC" | "TIME_DESC" | "DEFAULT";
 
 export default function TaskTableCard() {
   const { mutate } = useSWRConfig();
@@ -92,25 +89,26 @@ export default function TaskTableCard() {
       // ⚡ CHANGE 4: Await single task completion patch operation
       await apiClient(`/tasks/${taskId}/complete`, { method: "PATCH" });
 
-      console.time("🚀 Cache Mutation Core");
-      
       // ⚡ CHANGE 5: Run SWR revalidations concurrently using Promise.all to prevent sequential network request flooding
       await Promise.all([
         globalInvalidate(),
         mutate("/tasks"),
         mutate("/user/profile"),
       ]);
-
-      console.timeEnd("🚀 Cache Mutation Core");
     } catch (err) {
       console.error("Task completion toggle execution failure:", err);
-      // Revert optimistic cache states on error
+      toast.error("Failed to update task status. Please try again.");
       mutate(dashboardUrl);
       mutate("/user/profile");
     } finally {
       // ⚡ CHANGE 6: Always dequeue task from active queue so user can interact again if necessary
       activeTaskQueue.current.delete(taskId);
     }
+  };
+
+  const handleTaskClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const taskId = event.currentTarget.dataset.taskId;
+    if (taskId) void handleTaskToggle(taskId);
   };
 
   const getSortedTasks = (): Task[] => {
@@ -151,7 +149,6 @@ export default function TaskTableCard() {
   return (
     /* 1. Main Card Bounding Box: Added 'min-h-0' to clamp its dimension layout */
     <div className="h-full w-full lg:col-span-1 bg-white dark:bg-[#121214] border border-slate-200 dark:border-[#222226] rounded-2xl p-5 flex flex-col min-h-0 overflow-hidden transition-colors duration-300">
-      
       {/* ── Header Section ── */}
       <div className="flex items-center justify-between mb-4 select-none shrink-0">
         <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
@@ -239,7 +236,8 @@ export default function TaskTableCard() {
             return (
               <div
                 key={task.id}
-                onClick={() => !isDone && handleTaskToggle(task.id)}
+                data-task-id={task.id}
+                onClick={isDone ? undefined : handleTaskClick}
                 className={`flex items-center justify-between px-3 py-2 border rounded-lg transition-all duration-300 group ${
                   isDone
                     ? "bg-slate-50 dark:bg-white/1 border-transparent opacity-45 select-none"

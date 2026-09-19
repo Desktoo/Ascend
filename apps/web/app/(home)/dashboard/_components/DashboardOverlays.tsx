@@ -14,8 +14,8 @@ import {
 } from "./overlays/DailyReflectionOverlay/Daily-Reflection.types";
 import { useObjectiveNewTasks } from "@/core/hooks/useObjective";
 import { submitSelfReflection } from "@/core/services/user/self-reflection";
-import useReflectionTrigger from "@/core/hooks/useReflectionTrigger";
 import NotificationOverlay from "./overlays/NotificationOverlay";
+import { toast } from "sonner";
 
 export type ActiveModalType = "TASK" | "GOAL" | "HABIT" | "REFLECTION" | null;
 
@@ -90,7 +90,7 @@ export default function DashboardOverlays({
       onCloseModal();
     } catch (error) {
       console.error("Failed to submit daily self reflection:", error);
-      throw error;
+      toast.error("Failed to submit daily self reflection. Please try again.");
     }
   };
 

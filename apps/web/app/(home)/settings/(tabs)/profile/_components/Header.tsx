@@ -36,7 +36,7 @@ export default function ProfileHeader({
     }
   };
 
-  const displayAvatar = previewUrl || avatarUrl || "/images/photo-test.jpg";
+  const displayAvatar = ( previewUrl || avatarUrl ) ?? "/images/photo-test.jpg";
 
   return (
     <div className="space-y-6 pb-6 border-b border-zinc-800/80">

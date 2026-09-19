@@ -11,10 +11,19 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env"), override: true });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   // Explicitly tell Next.js to inject these keys into the build pipeline
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
   async rewrites() {
     return [

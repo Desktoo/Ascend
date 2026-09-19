@@ -38,11 +38,9 @@ export default function ForgotPasswordPage() {
 
       console.log("Reset link pipeline executed:", responseData);
       toast.success("Password reset instructions sent to your email!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Forgot password request failed:", error);
-      toast.error(
-        error.message || "Failed to process your request. Please try again.",
-      );
+      toast.error("Failed to process your request. Please try again.");
     }
   };
 

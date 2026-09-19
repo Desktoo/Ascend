@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Flame, Sparkles, Activity, Clock, Pause, Play, Loader2 } from "lucide-react";
 import { gsap } from "gsap";
 import { HabitDetailsPageResponse } from "@/core/types/habits.types";
+import { toast } from "sonner";
 
 interface HeroCardProps {
   habit: HabitDetailsPageResponse;
@@ -34,6 +35,7 @@ export default function HeroCard({ habit, onToggleStatus }: HeroCardProps) {
       setIsPending(true);
       await onToggleStatus();
     } catch (err) {
+      toast.error("Failed to sync status update. Please try again.");
       console.error("Failed to sync status update:", err);
     } finally {
       setIsPending(false);

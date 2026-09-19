@@ -8,6 +8,7 @@ import { OnboardingService } from "@/core/services/user/onboarding.service";
 import BgWrapper from "@/components/custom-components/backgrounds/BgWrapper";
 import useUserProfile from "@/core/hooks/useUserProfile";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // 1. Define the Zod validation schema
 const onboardingSchema = z.object({
@@ -21,13 +22,9 @@ export default function OnboardingPage() {
   const router = useRouter();
   // Extract user and the revalidation function (mutate/refetch) from your hook
   const { user, mutate } = useUserProfile();
-
-  // 2. Initialize React Hook Form
-  console.log("user details", user)
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
   } = useForm<OnboardingFormValues>({
     resolver: zodResolver(onboardingSchema),
@@ -54,12 +51,10 @@ export default function OnboardingPage() {
         );
       }
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (error) {
       // Set an API error to the form's root error state
-      setError("root", {
-        type: "manual",
-        message: err.message || "Failed to complete onboarding",
-      });
+      console.error("Onboarding API error:", error);
+      toast.error("Failed to complete onboarding. Please try again.");
     }
   };
 
@@ -78,7 +73,7 @@ export default function OnboardingPage() {
                 Welcome to DayMark
               </h1>
               <p className="text-xs text-gray-400 mt-1">
-                Let's set up your profile to personalize your experience.
+                Let&apos;s set up your profile to personalize your experience.
               </p>
             </div>
 

@@ -9,6 +9,7 @@ import { apiClient } from "@/core/services/client";
 import EmptyObjectivesState from "./_components/EmptyObjectiveState";
 import ObjectiveSkeletonGrid from "./_components/ObjectiveSkeletonGrid";
 import ObjectivesErrorState from "./_components/ObjectiveErrorState";
+import { toast } from "sonner";
 
 export default function ObjectivesView() {
   const { objectives = [], isLoading, isError, mutate } = useObjective();
@@ -19,6 +20,7 @@ export default function ObjectivesView() {
       mutate(); // Re-validate SWR cache after abandonment
     } catch (error) {
       console.error("Failed to abandon objective", error);
+      toast.error("Failed to abandon objective. Please try again.");
     }
   };
 

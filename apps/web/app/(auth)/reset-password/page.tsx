@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
     },
   });
 
-  const onFormSubmit = async (data: { password: any }) => {
+  const onFormSubmit = async (data: { password: string }) => {
     if (!token) return;
 
     const payload = {
@@ -56,9 +56,9 @@ export default function ResetPasswordPage() {
 
       toast.success(response.message || "Password updated successfully!");
       router.replace("/login");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Password modification failure:", error);
-      toast.error(error.message || "Token expired. Please request a new link.");
+      toast.error("Token expired. Please request a new link.");
       router.replace("/login"); // Instantly reroute user on security verification failures
     }
   };
