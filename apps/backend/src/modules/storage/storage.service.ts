@@ -31,13 +31,6 @@ export class StorageService {
       'utf-8',
     );
 
-    this.logger.log('--- OCI AUTH DEBUG ---');
-    this.logger.log('Tenancy:', env.OCI_TENANCY);
-    this.logger.log('User:', env.OCI_USER);
-    this.logger.log('Fingerprint:', env.OCI_FINGERPRINT);
-    this.logger.log('Region:', env.OCI_REGION);
-    this.logger.log('Key starts with:', privateKey);
-
     const provider = new SimpleAuthenticationDetailsProvider(
       env.OCI_TENANCY,
       env.OCI_USER,
