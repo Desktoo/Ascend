@@ -2,8 +2,8 @@
 # Ascend Helm Values — PRODUCTION Environment
 # ==============================================================================
 # Usage:
-#   helm upgrade --install ascend-prod ./ascend-charts \
-#     -f ./ascend-charts/values-prod.yaml \
+#   helm upgrade --install ascend-prod ./helm \
+#     -f ./helm/values-prod.yaml \
 #     --namespace prod --create-namespace
 # ==============================================================================
 

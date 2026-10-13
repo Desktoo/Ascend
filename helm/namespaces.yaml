@@ -2,7 +2,7 @@
 # Standalone Kubernetes Namespaces for Staging & Production
 # ==============================================================================
 # If you prefer to create namespaces manually before running Helm, run:
-#   kubectl apply -f ascend-charts/namespaces.yaml
+#   kubectl apply -f helm/namespaces.yaml
 # ==============================================================================
 
 apiVersion: v1

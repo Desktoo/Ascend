@@ -2,8 +2,8 @@
 # Ascend Helm Values — STAGING Environment
 # ==============================================================================
 # Usage:
-#   helm upgrade --install ascend-staging ./ascend-charts \
-#     -f ./ascend-charts/values-staging.yaml \
+#   helm upgrade --install ascend-staging ./helm \
+#     -f ./helm/values-staging.yaml \
 #     --namespace staging --create-namespace
 # ==============================================================================
 
