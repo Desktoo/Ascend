@@ -9,7 +9,7 @@ import {
 import bcrypt from 'bcrypt';
 import type { Prisma } from '@day-mark/db';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { env } from '@day-mark/config';
+
 import { GamificationCacheRepository } from 'src/common/gamification/repos/gamification-cache.repo';
 import { getUserLogicalDate } from 'src/common/utils/time.utils';
 import { DynamoDbService } from 'src/common/dynamo-db/dynamo-db.service';
@@ -22,6 +22,7 @@ import {
   UserCacheRepository,
 } from './repos/user-cache.repo';
 import { StorageService, ValidUploadFile } from '../storage/storage.service';
+import { env } from '../../config/env';
 
 @Injectable()
 export class UserService {

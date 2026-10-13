@@ -1,0 +1,24 @@
+# ==============================================================================
+# Standalone Kubernetes Namespaces for Staging & Production
+# ==============================================================================
+# If you prefer to create namespaces manually before running Helm, run:
+#   kubectl apply -f ascend-charts/namespaces.yaml
+# ==============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    name: staging
+    app.kubernetes.io/part-of: ascend
+    environment: staging
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+  labels:
+    name: prod
+    app.kubernetes.io/part-of: ascend
+    environment: production

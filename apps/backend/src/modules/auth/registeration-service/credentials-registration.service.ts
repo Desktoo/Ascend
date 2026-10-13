@@ -3,7 +3,7 @@ import { PrismaService } from 'src/common/prisma/prisma.service';
 import { UserService } from 'src/modules/user/user.service';
 import bcrypt from 'bcrypt';
 import { Prisma } from '@day-mark/db';
-import { env } from '@day-mark/config';
+import { env } from '../../../config/env';
 
 @Injectable()
 export class CredentialRegistrationService {

@@ -2,8 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { INotificationProvider } from './notification-provider.interface';
 import { NotificationPayload } from '../notification.types';
 import * as webpush from 'web-push';
-import { env } from '@day-mark/config';
+
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import { env } from '../../../config/env';
 
 @Injectable()
 export class WebPushProvider implements INotificationProvider {

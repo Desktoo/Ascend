@@ -1,0 +1,39 @@
+# ==============================================================================
+# 1. Backend Service (ClusterIP load balancer for API & WebSockets)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ascend.fullname" . }}-backend
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  type: {{ .Values.backend.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.service.targetPort }}
+      protocol: TCP
+  selector:
+    {{- include "ascend.backendSelectorLabels" . | nindent 4 }}
+---
+# ==============================================================================
+# 2. Frontend Web Service (ClusterIP load balancer for Next.js SSR)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ascend.fullname" . }}-web
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  type: {{ .Values.web.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.web.service.port }}
+      targetPort: {{ .Values.web.service.targetPort }}
+      protocol: TCP
+  selector:
+    {{- include "ascend.webSelectorLabels" . | nindent 4 }}

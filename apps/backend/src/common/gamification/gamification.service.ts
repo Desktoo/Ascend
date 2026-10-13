@@ -126,7 +126,10 @@ export class GamificationService {
       });
 
       // Create a fast lookup map for O(1) matching memory retrieval speeds
-      const dbUserMap = new Map(dbUsers.map((u) => [u.id, u]));
+      const dbUserMap = new Map<
+        string,
+        { id: string; xp: number; level: number }
+      >(dbUsers.map((u) => [u.id, u]));
 
       const transactionBatchActions: Prisma.PrismaPromise<any>[] = [];
       const processedUsersList: string[] = [];

@@ -1,7 +1,7 @@
-import { env } from '@day-mark/config';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
+import { env } from '../../../config/env';
 
 export interface GoogleOAuthUser {
   providerAccountId: string;

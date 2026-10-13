@@ -3,6 +3,10 @@ packages:
   - "packages/*"
   - "packages/core/db"
 allowBuilds:
-  '@prisma/engines': set this to true or false
+  '@prisma/engines': true
+  bcrypt: true
+  esbuild: true
   msgpackr-extract: true
   prisma: false
+  sharp: true
+  unrs-resolver: true

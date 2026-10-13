@@ -1,4 +1,5 @@
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { env } from '../config/env';
+const baseUrl = env.NEXT_PUBLIC_API_URL;
 
 // Endpoints where a 401 is a final answer (bad credentials, no session yet),
 // not a signal to silently refresh and retry.

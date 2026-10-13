@@ -6,7 +6,8 @@ import {
   PutCommand,
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { env } from '@day-mark/config';
+
+import { env } from '../../config/env';
 import {
   Injectable,
   InternalServerErrorException,

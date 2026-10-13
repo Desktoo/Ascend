@@ -20,11 +20,12 @@ import { AuthService, IOAuthUser } from './auth.service';
 import { UserService } from '../user/user.service';
 import type { Response, Request } from 'express';
 import bcrypt from 'bcrypt';
-import { env } from '@day-mark/config';
+
 import { Prisma } from '@day-mark/db';
 import { AuthGuard } from '@nestjs/passport';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { Cookie } from 'src/common/decorators/cookie.decorator';
+import { env } from '../../config/env';
 
 @Controller('auth')
 export class AuthController {

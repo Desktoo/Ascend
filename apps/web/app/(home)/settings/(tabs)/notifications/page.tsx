@@ -1,8 +1,8 @@
 'use client';
 
+import { env } from '../../../../../core/config/env';
 import { useState } from 'react';
 import { Bell, Monitor, Clock, ChevronDown, ChevronUp } from 'lucide-react';
-import { clientEnv } from "../../../../../../../packages/config/client";
 import { PushNotificationService } from '@/core/services/notifications/push.service';
 import { NotificationPreferencesService } from '@/core/services/notifications/preference.service';
 import { Switch } from '@/components/ui/switch';
@@ -14,7 +14,7 @@ export default function NotificationsPage() {
   const [remindersExpanded, setRemindersExpanded] = useState(false);
   const [midDayReminder, setMidDayReminder] = useState(true);
 
-  const VAPID_PUBLIC_KEY = clientEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const VAPID_PUBLIC_KEY = env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
   // Handle Master Notification Toggle
   const handleMasterToggle = async (checked: boolean) => {

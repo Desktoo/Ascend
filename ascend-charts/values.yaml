@@ -1,0 +1,197 @@
+# ==============================================================================
+# Ascend (Day Mark) - Helm Chart Values
+# ==============================================================================
+# This file is the single control panel for your entire Kubernetes deployment.
+# Your template files (deployment.yaml, service.yaml, configmap.yaml, etc.)
+# will read values from here using: {{ .Values.backend.image.repository }}, etc.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Global / Shared Metadata
+# ------------------------------------------------------------------------------
+global:
+  environment: production
+  appName: ascend
+
+# ------------------------------------------------------------------------------
+# Namespace Configuration
+# ------------------------------------------------------------------------------
+namespace:
+  # Set to true if you want Helm to generate the Namespace resource.
+  # Otherwise, deploy using: helm install ... --namespace <staging|prod> --create-namespace
+  create: false
+  name: ""
+
+# ------------------------------------------------------------------------------
+# 1. Backend Service (NestJS API + BullMQ Queue Workers)
+# ------------------------------------------------------------------------------
+backend:
+  replicaCount: 2
+
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion in Chart.yaml
+    tag: "latest"
+
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+
+  # Horizontal Pod Autoscaler (HPA) settings
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+
+  # Container compute resource boundaries
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+  # Health checking probes
+  probes:
+    liveness:
+      path: /health
+      port: 3000
+      initialDelaySeconds: 20
+      periodSeconds: 15
+      failureThreshold: 3
+    readiness:
+      path: /health
+      port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 3
+
+  # Non-sensitive environment variables (baked into a ConfigMap)
+  env:
+    PORT: "3000"
+    NODE_ENV: "production"
+    AWS_REGION: "us-east-1"
+    GOOGLE_CALLBACK_URL: "https://api.ascend.example.com/api/auth/google/callback"
+    GITHUB_CALLBACK_URL: "https://api.ascend.example.com/api/auth/github/callback"
+
+# ------------------------------------------------------------------------------
+# 2. Frontend Service (Next.js 16 Web App)
+# ------------------------------------------------------------------------------
+web:
+  replicaCount: 2
+
+  image:
+    repository: desktooondocker/ascend-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    limits:
+      cpu: 400m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
+
+  probes:
+    liveness:
+      path: /
+      port: 3001
+      initialDelaySeconds: 15
+      periodSeconds: 15
+      failureThreshold: 3
+    readiness:
+      path: /
+      port: 3001
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 3
+
+  # Non-sensitive environment variables (baked into a ConfigMap)
+  env:
+    PORT: "3001"
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: "https://api.ascend.example.com"
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: "YOUR_VAPID_PUBLIC_KEY"
+
+# ------------------------------------------------------------------------------
+# 3. Database Migration Job (Prisma DB Push / Migrate Hook)
+# ------------------------------------------------------------------------------
+# Runs as a Kubernetes Job before or alongside deployment rollouts
+migration:
+  enabled: true
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  # Command that applies Prisma schema updates to the PostgreSQL database
+  command:
+    - "sh"
+    - "-c"
+    - "cd packages/core/db && npx prisma db push --schema=prisma/schema.prisma --accept-data-loss"
+
+# ------------------------------------------------------------------------------
+# 4. Secrets Configuration
+# ------------------------------------------------------------------------------
+# Production strategies:
+# - If useExistingSecret is true: Pods attach to a secret created by AWS Secrets Manager / External Secrets Operator
+# - If false: Helm creates a Kubernetes Secret using the 'values' object below (override via GitHub Actions --set)
+secrets:
+  useExistingSecret: false
+  existingSecretName: "ascend-secrets"
+
+  # Placeholders for Helm-managed secret template
+  # DO NOT put real production credentials here in git!
+  # Inject them at deploy time: helm install ... --set secrets.values.DATABASE_URL="..."
+  values:
+    DATABASE_URL: "postgresql://admin:password@postgres:5432/daymark"
+    MONGODB_URI: "mongodb://admin:password@mongo:27017/daymark?authSource=admin"
+    QUEUE_REDIS_URL: "redis://redis:6379"
+    UPSTASH_REDIS_URL: "redis://redis:6379"
+    JWT_ACCESS_SECRET: "replace-with-strong-jwt-access-secret"
+    JWT_REFRESH_SECRET: "replace-with-strong-jwt-refresh-secret"
+    BCRYPT_SECRET_PEPPER: "replace-with-strong-pepper"
+    AWS_IAM_ACCESS_KEY: "your-aws-access-key"
+    AWS_IAM_SECRET_ACCESS_KEY: "your-aws-secret-key"
+    RESEND_API: "your-resend-api-key"
+    VAPID_PUBLIC_KEY: "your-vapid-public-key"
+    VAPID_PRIVATE_KEY: "your-vapid-private-key"
+    GOOGLE_AUTH_CLIENT_ID: ""
+    GOOGLE_AUTH_CLIENT_SECRET: ""
+    GITHUB_AUTH_CLIENT_ID: ""
+    GITHUB_AUTH_CLIENT_SECRET: ""
+
+# ------------------------------------------------------------------------------
+# 5. Ingress Controller (Routing external traffic to Web & Backend)
+# ------------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "5m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  # Host domains
+  webHost: "app.ascend.example.com"
+  backendHost: "api.ascend.example.com"
+  # TLS / SSL setup
+  tls:
+    enabled: true
+    secretName: "ascend-tls-cert"

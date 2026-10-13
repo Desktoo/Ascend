@@ -1,5 +1,5 @@
 import { CreateTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { env } from '@day-mark/config';
+import { env } from '../../config/env';
 
 const client = new DynamoDBClient({
   region: env.AWS_REGION,

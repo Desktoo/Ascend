@@ -1,0 +1,145 @@
+# ==============================================================================
+# Ascend Helm Values — PRODUCTION Environment
+# ==============================================================================
+# Usage:
+#   helm upgrade --install ascend-prod ./ascend-charts \
+#     -f ./ascend-charts/values-prod.yaml \
+#     --namespace prod --create-namespace
+# ==============================================================================
+
+global:
+  environment: production
+  appName: ascend
+
+# Namespace setup for Production
+namespace:
+  create: true
+  name: prod
+
+# ------------------------------------------------------------------------------
+# 1. Backend (Production: High Availability with Auto-scaling)
+# ------------------------------------------------------------------------------
+backend:
+  replicaCount: 3
+
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    tag: "latest" # Replace with specific git commit or release tag (e.g. v1.0.0)
+
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  env:
+    PORT: "3000"
+    NODE_ENV: "production"
+    AWS_REGION: "us-east-1"
+    GOOGLE_CALLBACK_URL: "https://api.ascend.example.com/api/auth/google/callback"
+    GITHUB_CALLBACK_URL: "https://api.ascend.example.com/api/auth/github/callback"
+
+# ------------------------------------------------------------------------------
+# 2. Frontend Web (Production: Redundant Pods)
+# ------------------------------------------------------------------------------
+web:
+  replicaCount: 2
+
+  image:
+    repository: desktooondocker/ascend-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
+
+  env:
+    PORT: "3001"
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: "https://api.ascend.example.com"
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: "YOUR_PROD_VAPID_PUBLIC_KEY"
+
+# ------------------------------------------------------------------------------
+# 3. Database Migration Job
+# ------------------------------------------------------------------------------
+migration:
+  enabled: true
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+# ------------------------------------------------------------------------------
+# 4. Secrets
+# ------------------------------------------------------------------------------
+secrets:
+  # In production, recommend setting this to true if using AWS Secrets Manager
+  # or External Secrets Operator.
+  useExistingSecret: false
+  existingSecretName: "ascend-prod-secrets"
+
+  values:
+    DATABASE_URL: "postgresql://admin:password@postgres:5432/daymark"
+    MONGODB_URI: "mongodb://admin:password@mongo:27017/daymark?authSource=admin"
+    QUEUE_REDIS_URL: "redis://redis:6379"
+    UPSTASH_REDIS_URL: "redis://redis:6379"
+    JWT_ACCESS_SECRET: "replace-with-prod-jwt-access-secret"
+    JWT_REFRESH_SECRET: "replace-with-prod-jwt-refresh-secret"
+    BCRYPT_SECRET_PEPPER: "replace-with-prod-pepper"
+    AWS_IAM_ACCESS_KEY: "your-prod-aws-access-key"
+    AWS_IAM_SECRET_ACCESS_KEY: "your-prod-aws-secret-key"
+    RESEND_API: ""
+    VAPID_PUBLIC_KEY: ""
+    VAPID_PRIVATE_KEY: ""
+    GOOGLE_AUTH_CLIENT_ID: ""
+    GOOGLE_AUTH_CLIENT_SECRET: ""
+    GITHUB_AUTH_CLIENT_ID: ""
+    GITHUB_AUTH_CLIENT_SECRET: ""
+
+# ------------------------------------------------------------------------------
+# 5. Ingress (Production custom domains + Let's Encrypt SSL)
+# ------------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  webHost: "app.ascend.example.com"
+  backendHost: "api.ascend.example.com"
+  tls:
+    enabled: true
+    secretName: "ascend-prod-tls-cert"

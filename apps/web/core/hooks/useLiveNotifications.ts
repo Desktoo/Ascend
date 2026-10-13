@@ -1,6 +1,6 @@
-// src/core/hooks/useLiveNotifications.ts
 "use client";
 
+import { env } from '../config/env';
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { useSWRConfig } from "swr";
@@ -13,7 +13,7 @@ export function useLiveNotifications(userId?: string) {
     if (!userId) return;
 
     // Connect to your NestJS backend
-    const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001", {
+    const socket = io(env.NEXT_PUBLIC_API_URL, {
       query: { userId },
     });
 

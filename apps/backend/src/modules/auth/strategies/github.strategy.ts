@@ -1,6 +1,6 @@
-import { env } from '@day-mark/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-github2';
+import { env } from '../../../config/env';
 
 export interface GithubOAuthUser {
   providerAccountId: string;

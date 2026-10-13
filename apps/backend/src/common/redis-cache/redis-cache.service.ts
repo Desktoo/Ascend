@@ -1,4 +1,3 @@
-import { env } from '@day-mark/config';
 import {
   Injectable,
   Logger,
@@ -7,6 +6,7 @@ import {
 } from '@nestjs/common';
 import Redis from 'ioredis';
 import Redlock from 'redlock';
+import { env } from '../../config/env';
 
 @Injectable()
 export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
@@ -16,7 +16,7 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     if (!env.UPSTASH_REDIS_URL) {
-      this.logger.error('UPSTASH_REDIS_URL is missing from your env');
+      this.logger.error('UPSTASH_REDIS_URL is missing from your process.env');
     }
 
     this.client = new Redis(env.UPSTASH_REDIS_URL, {
@@ -24,7 +24,7 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
       tls: {
         rejectUnauthorized: false,
       },
-      // tls: env.NODE_ENV === 'production' ? {} : undefined,
+      // tls: env.NODE_process.env === 'production' ? {} : undefined,
       maxRetriesPerRequest: 10,
     });
 

@@ -66,8 +66,8 @@ export class TasksService {
 
     // Fetch user's timeZone and dayStartTime from Redis cache or DB
     const userProfile = await this.userCache.getCoreProfile(userId);
-    let resolvedTimeZone = timeZone || userProfile?.timeZone;
-    let resolvedDayStartTime = userProfile?.dayStartTime;
+    let resolvedTimeZone = timeZone || userProfile?.timeZone || 'Asia/Kolkata';
+    let resolvedDayStartTime = userProfile?.dayStartTime || '05:00';
 
     if (!resolvedTimeZone || !resolvedDayStartTime) {
       const userDb = await prismaClient.user.findUnique({
@@ -168,8 +168,8 @@ export class TasksService {
 
   async getDashboardTasks(userId: string) {
     const userProfile = await this.userCache.getCoreProfile(userId);
-    let timeZone = userProfile?.timeZone;
-    let dayStartTime = userProfile?.dayStartTime;
+    let timeZone = userProfile?.timeZone || 'Asia/Kolkata';
+    let dayStartTime = userProfile?.dayStartTime || '05:00';
 
     if (!timeZone || !dayStartTime) {
       const user = await this.prisma.client.user.findUniqueOrThrow({

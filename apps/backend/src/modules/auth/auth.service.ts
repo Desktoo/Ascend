@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
-import { env } from '@day-mark/config';
+
 import { JwtService } from '@nestjs/jwt';
 import type { Prisma } from '@day-mark/db';
 import { RedisCacheService } from '../../common/redis-cache/redis-cache.service';
@@ -14,6 +14,7 @@ import { Response } from 'express';
 import { Resend } from 'resend';
 import { randomBytes } from 'crypto';
 import { AuthCacheRepository } from './repos/auth-cache.repo';
+import { env } from '../../config/env';
 
 interface AuthenticatedUserSession {
   id: string;
@@ -101,14 +102,14 @@ export class AuthService {
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -289,7 +290,7 @@ export class AuthService {
       res.cookie('access_token', newAccessToken, {
         httpOnly: true,
         sameSite: 'lax',
-        // secure: process.env.NODE_ENV === 'production',
+        // secure: env.NODE_ENV === 'production',
         maxAge: 15 * 60 * 1000,
       });
 
@@ -321,7 +322,7 @@ export class AuthService {
   }
 
   logout(response: Response) {
-    // const isProduction = process.env.NODE_ENV === 'production';
+    // const isProduction = env.NODE_ENV === 'production';
     const cookieOptions = {
       httpOnly: true,
       // TODO:

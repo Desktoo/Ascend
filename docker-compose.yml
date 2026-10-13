@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. Databases & Caching Layer
+  # ==========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: daymark_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: daymark
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:6-jammy
+    container_name: daymark_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:alpine
+    container_name: daymark_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: daymark_dynamodb
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+
+  # ==========================================
+  # 2. Database Migrator (Init Container)
+  # ==========================================
+  db-migrator:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: daymark_migrator
+    environment:
+      DATABASE_URL: postgresql://admin:password@postgres:5432/daymark
+    # Only runs the migration and then shuts down gracefully
+    command: > 
+      sh -c "cd packages/core/db && npx prisma db push --schema=prisma/schema.prisma --accept-data-loss"
+    depends_on:
+      - postgres
+
+  # ==========================================
+  # 3. Backend API
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: daymark_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/backend/.env
+    command: ["node", "apps/backend/dist/main.js"]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://admin:password@postgres:5432/daymark
+      MONGODB_URI: mongodb://admin:password@mongo:27017/daymark?authSource=admin
+      QUEUE_REDIS_URL: redis://redis:6379
+      UPSTASH_REDIS_URL: redis://redis:6379
+      AWS_ENDPOINT_URL_DYNAMODB: http://dynamodb:8000
+      AWS_ACCESS_KEY_ID: fake_dev_key
+      AWS_SECRET_ACCESS_KEY: fake_dev_secret
+      AWS_REGION: us-east-1
+    depends_on:
+      db-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
+      dynamodb:
+        condition: service_started
+
+  # ==========================================
+  # 3. Frontend Web App
+  # ==========================================
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:3000
+        - NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key_here
+    container_name: daymark_web
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  dynamodb_data:

@@ -1,0 +1,139 @@
+# ==============================================================================
+# Ascend Helm Values — STAGING Environment
+# ==============================================================================
+# Usage:
+#   helm upgrade --install ascend-staging ./ascend-charts \
+#     -f ./ascend-charts/values-staging.yaml \
+#     --namespace staging --create-namespace
+# ==============================================================================
+
+global:
+  environment: staging
+  appName: ascend
+
+# Namespace setup for Staging
+namespace:
+  create: true
+  name: staging
+
+# ------------------------------------------------------------------------------
+# 1. Backend (Staging: 1 Pod, lower resource foot-print)
+# ------------------------------------------------------------------------------
+backend:
+  replicaCount: 1
+
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    tag: "staging" # Or latest commit tag
+
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+
+  # Turn off autoscaling in staging to save cloud costs
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  env:
+    PORT: "3000"
+    NODE_ENV: "staging"
+    AWS_REGION: "us-east-1"
+    GOOGLE_CALLBACK_URL: "https://api.staging.ascend.example.com/api/auth/google/callback"
+    GITHUB_CALLBACK_URL: "https://api.staging.ascend.example.com/api/auth/github/callback"
+
+# ------------------------------------------------------------------------------
+# 2. Frontend Web (Staging: 1 Pod)
+# ------------------------------------------------------------------------------
+web:
+  replicaCount: 1
+
+  image:
+    repository: desktooondocker/ascend-web
+    pullPolicy: IfNotPresent
+    tag: "staging"
+
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+
+  autoscaling:
+    enabled: false
+
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  env:
+    PORT: "3001"
+    NODE_ENV: "staging"
+    NEXT_PUBLIC_API_URL: "https://api.staging.ascend.example.com"
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: "YOUR_STAGING_VAPID_PUBLIC_KEY"
+
+# ------------------------------------------------------------------------------
+# 3. Database Migration Job
+# ------------------------------------------------------------------------------
+migration:
+  enabled: true
+  image:
+    repository: desktooondocker/ascend-backend
+    pullPolicy: IfNotPresent
+    tag: "staging"
+
+# ------------------------------------------------------------------------------
+# 4. Secrets (Staging databases)
+# ------------------------------------------------------------------------------
+secrets:
+  useExistingSecret: false
+  existingSecretName: "ascend-staging-secrets"
+
+  values:
+    DATABASE_URL: "postgresql://staging_user:staging_password@postgres:5432/daymark_staging"
+    MONGODB_URI: "mongodb://staging_user:staging_password@mongo:27017/daymark_staging?authSource=admin"
+    QUEUE_REDIS_URL: "redis://redis:6379"
+    UPSTASH_REDIS_URL: "redis://redis:6379"
+    JWT_ACCESS_SECRET: "staging-jwt-access-secret-only"
+    JWT_REFRESH_SECRET: "staging-jwt-refresh-secret-only"
+    BCRYPT_SECRET_PEPPER: "staging-bcrypt-pepper"
+    AWS_IAM_ACCESS_KEY: "staging-aws-key"
+    AWS_IAM_SECRET_ACCESS_KEY: "staging-aws-secret"
+    RESEND_API: ""
+    VAPID_PUBLIC_KEY: ""
+    VAPID_PRIVATE_KEY: ""
+    GOOGLE_AUTH_CLIENT_ID: ""
+    GOOGLE_AUTH_CLIENT_SECRET: ""
+    GITHUB_AUTH_CLIENT_ID: ""
+    GITHUB_AUTH_CLIENT_SECRET: ""
+
+# ------------------------------------------------------------------------------
+# 5. Ingress (Staging subdomains)
+# ------------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  webHost: "app.staging.ascend.example.com"
+  backendHost: "api.staging.ascend.example.com"
+  tls:
+    enabled: true
+    secretName: "ascend-staging-tls-cert"

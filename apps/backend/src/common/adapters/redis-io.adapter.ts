@@ -1,9 +1,9 @@
-import { env } from '@day-mark/config';
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import Redis from 'ioredis';
 import { Server, ServerOptions } from 'socket.io';
+import { env } from '../../config/env';
 
 export class RedisIOAdapter extends IoAdapter {
   private adapterConstructor!: ReturnType<typeof createAdapter>;

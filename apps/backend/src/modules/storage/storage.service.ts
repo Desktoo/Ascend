@@ -1,4 +1,3 @@
-import { env } from '@day-mark/config';
 import {
   Injectable,
   Logger,
@@ -10,6 +9,7 @@ import { Region, SimpleAuthenticationDetailsProvider } from 'oci-common';
 import { v4 as uuidv4 } from 'uuid';
 import 'multer';
 import sharp from 'sharp';
+import { env } from '../../config/env';
 
 export interface ValidUploadFile {
   originalname: string;
@@ -27,9 +27,10 @@ export class StorageService {
   private readonly logger = new Logger(StorageService.name);
 
   constructor() {
-    const privateKey = Buffer.from(env.OCI_PRIVATE_KEY, 'base64').toString(
-      'utf-8',
-    );
+    const privateKey = Buffer.from(
+      env.OCI_PRIVATE_KEY,
+      'base64',
+    ).toString('utf-8');
 
     const provider = new SimpleAuthenticationDetailsProvider(
       env.OCI_TENANCY,

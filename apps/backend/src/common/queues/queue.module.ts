@@ -1,7 +1,7 @@
-import { env } from '@day-mark/config';
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
 import { HABITS_QUEUE } from './queue-names';
+import { env } from '../../config/env';
 
 @Global()
 @Module({

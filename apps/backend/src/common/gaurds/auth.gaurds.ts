@@ -1,4 +1,3 @@
-import { env } from '@day-mark/config';
 import {
   CanActivate,
   ExecutionContext,
@@ -7,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { env } from '../../config/env';
 
 export interface AuthenticatedRequest extends Request {
   user: {

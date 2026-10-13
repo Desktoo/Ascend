@@ -39,7 +39,7 @@ export class GoalsService {
       // Use a transaction to ensure both Goal and Task creation succeed together
       const result = await this.prisma.client.$transaction(
         async (tx: Prisma.TransactionClient) => {
-          let resolvedTimeZone = timeZoneHeader;
+          let resolvedTimeZone = timeZoneHeader || 'Asia/Kolkata'; // Default to IST if not provided
 
           if (!resolvedTimeZone) {
             const user = await tx.user.findUnique({
