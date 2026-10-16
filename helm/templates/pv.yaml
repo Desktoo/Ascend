@@ -1,0 +1,28 @@
+{{- if .Values.persistence.bullmq.enabled -}}
+# ==============================================================================
+# PersistentVolume (PV) for existing GCP Persistent Disk
+# ==============================================================================
+# Represents the physical disk created in Google Cloud Platform (GCP).
+# GKE CSI Driver attaches the existing disk by name/handle without formatting over data.
+# ==============================================================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistence.bullmq.pvName | default "ascend-bullmq-store-pv" }}
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bullmq-store
+spec:
+  capacity:
+    storage: {{ .Values.persistence.bullmq.capacity | default "10Gi" }}
+  accessModes:
+    - {{ .Values.persistence.bullmq.accessMode | default "ReadWriteOnce" }}
+  # Retain ensures that deleting the Helm release does NOT delete your GCP disk
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.bullmq.reclaimPolicy | default "Retain" }}
+  # 'manual' storageClassName prevents standard dynamic provisioners from creating a new disk
+  storageClassName: {{ .Values.persistence.bullmq.storageClassName | default "manual" | quote }}
+  csi:
+    driver: pd.csi.storage.gke.io
+    volumeHandle: {{ .Values.persistence.bullmq.diskName | default "ascend-bullmq-store-disk" }}
+    fsType: {{ .Values.persistence.bullmq.fsType | default "ext4" }}
+{{- end }}

@@ -1,0 +1,76 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - "packages/core/db/**"
+      - "packages/env/**"
+      - "packages/typescript-config/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "turbo.json"
+  push:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - "packages/core/db/**"
+      - "packages/env/**"
+      - "packages/typescript-config/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "turbo.json"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Backend Lint, Test & Build
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://ci_user:ci_pass@localhost:5432/ci_test"
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.2
+          run_install: false
+
+      - name: Setup Node.js with pnpm Store Cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Cache Turborepo Task Artifacts
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-backend-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-backend-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client (@day-mark/db)
+        run: pnpm --filter @day-mark/db db:generate
+
+      - name: Lint Backend
+        run: pnpm --filter backend lint
+
+      - name: Type Check Backend
+        run: pnpm --filter backend exec tsc --noEmit
+
+      - name: Run Backend Unit Tests (Vitest)
+        run: pnpm --filter backend test
+
+      - name: Build Backend (NestJS)
+        run: pnpm --filter backend build

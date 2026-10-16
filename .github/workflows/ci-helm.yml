@@ -1,0 +1,38 @@
+name: Helm CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "helm/**"
+  push:
+    branches: [main]
+    paths:
+      - "helm/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-helm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-template:
+    name: Helm Lint & Template Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Lint Helm Chart
+        run: helm lint ./helm
+
+      - name: Validate Staging Templates (Dry Run)
+        run: helm template test-staging ./helm -f ./helm/values-staging.yaml > /dev/null
+
+      - name: Validate Production Templates (Dry Run)
+        run: helm template test-prod ./helm -f ./helm/values-prod.yaml > /dev/null

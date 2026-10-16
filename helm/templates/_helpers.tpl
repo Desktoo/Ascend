@@ -52,6 +52,15 @@ app.kubernetes.io/component: web
 {{- end }}
 
 {{/*
+Selector labels for Redis Pods
+*/}}
+{{- define "ascend.redisSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "ascend.name" . }}-redis
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: redis
+{{- end }}
+
+{{/*
 Determine the secret name to use across templates
 */}}
 {{- define "ascend.secretName" -}}

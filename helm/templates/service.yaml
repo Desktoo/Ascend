@@ -37,3 +37,25 @@ spec:
       protocol: TCP
   selector:
     {{- include "ascend.webSelectorLabels" . | nindent 4 }}
+---
+# ==============================================================================
+# 3. Redis Service (ClusterIP for internal BullMQ & Caching traffic)
+# ==============================================================================
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.redis.service.name | default "redis" }}
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  type: {{ .Values.redis.service.type | default "ClusterIP" }}
+  ports:
+    - name: redis
+      port: {{ .Values.redis.service.port | default 6379 }}
+      targetPort: {{ .Values.redis.service.targetPort | default 6379 }}
+      protocol: TCP
+  selector:
+    {{- include "ascend.redisSelectorLabels" . | nindent 4 }}
+{{- end }}

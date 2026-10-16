@@ -98,3 +98,67 @@ spec:
             failureThreshold: {{ .Values.web.probes.readiness.failureThreshold }}
           resources:
             {{- toYaml .Values.web.resources | nindent 12 }}
+---
+# ==============================================================================
+# 3. Redis Deployment (BullMQ Store + Hot Cache backed by GCP PVC)
+# ==============================================================================
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.redis.name | default "redis" }}
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  replicas: {{ .Values.redis.replicaCount | default 1 }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "ascend.redisSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ascend.redisSelectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy | default "IfNotPresent" }}
+          command:
+            - "redis-server"
+            - "--appendonly"
+            - "yes"
+            - "--protected-mode"
+            - "no"
+          ports:
+            - name: redis
+              containerPort: {{ .Values.redis.service.targetPort | default 6379 }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: {{ .Values.redis.persistence.mountPath | default "/data" }}
+      volumes:
+        - name: redis-data
+          {{- if and .Values.redis.persistence.enabled .Values.persistence.bullmq.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.bullmq.pvcName | default "ascend-bullmq-store-pvc" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

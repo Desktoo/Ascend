@@ -137,3 +137,48 @@ ingress:
   tls:
     enabled: true
     secretName: "ascend-staging-tls-cert"
+
+# ------------------------------------------------------------------------------
+# 6. Persistent Storage (Disabled in staging by default to avoid disk conflict)
+# ------------------------------------------------------------------------------
+persistence:
+  bullmq:
+    enabled: false
+    diskName: "ascend-bullmq-store-disk-staging"
+    pvName: "ascend-bullmq-store-staging-pv"
+    pvcName: "ascend-bullmq-store-staging-pvc"
+    capacity: "10Gi"
+    storageClassName: "manual"
+    accessMode: "ReadWriteOnce"
+    reclaimPolicy: "Retain"
+    fsType: "ext4"
+
+# ------------------------------------------------------------------------------
+# 7. Redis Service (Staging BullMQ Store - uses emptyDir)
+# ------------------------------------------------------------------------------
+redis:
+  enabled: true
+  name: "redis"
+  replicaCount: 1
+  image:
+    repository: "redis"
+    tag: "7-alpine"
+    pullPolicy: "IfNotPresent"
+  service:
+    name: "redis"
+    type: "ClusterIP"
+    port: 6379
+    targetPort: 6379
+  # In staging, persistence is disabled so it uses an emptyDir volume (no GCP disk required)
+  persistence:
+    enabled: false
+    mountPath: "/data"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 192Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+

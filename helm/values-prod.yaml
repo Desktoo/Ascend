@@ -143,3 +143,47 @@ ingress:
   tls:
     enabled: true
     secretName: "ascend-prod-tls-cert"
+
+# ------------------------------------------------------------------------------
+# 6. Persistent Storage (Production GCP Persistent Disk)
+# ------------------------------------------------------------------------------
+persistence:
+  bullmq:
+    enabled: true
+    diskName: "ascend-bullmq-store-disk"
+    pvName: "ascend-bullmq-store-pv"
+    pvcName: "ascend-bullmq-store-pvc"
+    capacity: "10Gi"
+    storageClassName: "manual"
+    accessMode: "ReadWriteOnce"
+    reclaimPolicy: "Retain"
+    fsType: "ext4"
+
+# ------------------------------------------------------------------------------
+# 7. Redis Service (Production BullMQ Store)
+# ------------------------------------------------------------------------------
+redis:
+  enabled: true
+  name: "redis"
+  replicaCount: 1
+  image:
+    repository: "redis"
+    tag: "7-alpine"
+    pullPolicy: "IfNotPresent"
+  service:
+    name: "redis"
+    type: "ClusterIP"
+    port: 6379
+    targetPort: 6379
+  persistence:
+    enabled: true
+    mountPath: "/data"
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+

@@ -1,0 +1,23 @@
+{{- if .Values.persistence.bullmq.enabled -}}
+# ==============================================================================
+# PersistentVolumeClaim (PVC) for BullMQ / Redis Pods
+# ==============================================================================
+# Pods cannot mount a PV directly; they mount this PVC ticket inside the namespace.
+# ==============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistence.bullmq.pvcName | default "ascend-bullmq-store-pvc" }}
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bullmq-store
+spec:
+  accessModes:
+    - {{ .Values.persistence.bullmq.accessMode | default "ReadWriteOnce" }}
+  storageClassName: {{ .Values.persistence.bullmq.storageClassName | default "manual" | quote }}
+  # Statically bind directly to the PersistentVolume defined in pv.yaml
+  volumeName: {{ .Values.persistence.bullmq.pvName | default "ascend-bullmq-store-pv" }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.bullmq.capacity | default "10Gi" }}
+{{- end }}

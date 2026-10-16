@@ -195,3 +195,50 @@ ingress:
   tls:
     enabled: true
     secretName: "ascend-tls-cert"
+
+# ------------------------------------------------------------------------------
+# 6. Persistent Storage (GCP Persistent Disk for BullMQ / Redis)
+# ------------------------------------------------------------------------------
+persistence:
+  bullmq:
+    enabled: true
+    # Exact name of the Persistent Disk created in Google Cloud Platform (GCP)
+    diskName: "ascend-bullmq-store-disk"
+    # If regional/zonal disambiguation is needed, volumeHandle can also be:
+    # "projects/<PROJECT_ID>/zones/<ZONE>/disks/ascend-bullmq-store-disk"
+    pvName: "ascend-bullmq-store-pv"
+    pvcName: "ascend-bullmq-store-pvc"
+    capacity: "10Gi"              # Size matching your GCP disk
+    storageClassName: "manual"    # Uses static binding to prevent dynamic disk creation
+    accessMode: "ReadWriteOnce"
+    reclaimPolicy: "Retain"       # Keeps data intact in GCP even if PV/PVC is deleted
+    fsType: "ext4"
+
+# ------------------------------------------------------------------------------
+# 7. Redis Service (BullMQ Queue Store + Hot Cache)
+# ------------------------------------------------------------------------------
+redis:
+  enabled: true
+  name: "redis"
+  replicaCount: 1
+  image:
+    repository: "redis"
+    tag: "7-alpine"
+    pullPolicy: "IfNotPresent"
+  service:
+    name: "redis"
+    type: "ClusterIP"
+    port: 6379
+    targetPort: 6379
+  persistence:
+    enabled: true
+    mountPath: "/data"
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+
