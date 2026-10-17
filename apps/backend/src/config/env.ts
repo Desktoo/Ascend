@@ -38,12 +38,15 @@ const envSchema = z.object({
   RESEND_API: z.string(),
 
   // OAuth Providers
-  GITHUB_AUTH_CLIENT_ID: z.string(),
-  GITHUB_AUTH_CLIENT_SECRET: z.string(),
-  GITHUB_CALLBACK_URL: z.string(),
-  GOOGLE_AUTH_CLIENT_ID: z.string(),
-  GOOGLE_AUTH_CLIENT_SECRET: z.string(),
-  GOOGLE_CALLBACK_URL: z.string(),
+  GITHUB_AUTH_CLIENT_ID: z.string().optional().default(() => process.env.GH_AUTH_CLIENT_ID || ''),
+  GITHUB_AUTH_CLIENT_SECRET: z.string().optional().default(() => process.env.GH_AUTH_CLIENT_SECRET || ''),
+  GITHUB_CALLBACK_URL: z.string().optional().default(() => process.env.GH_CALLBACK_URL || ''),
+  GH_AUTH_CLIENT_ID: z.string().optional(),
+  GH_AUTH_CLIENT_SECRET: z.string().optional(),
+  GH_CALLBACK_URL: z.string().optional(),
+  GOOGLE_AUTH_CLIENT_ID: z.string().optional().default(''),
+  GOOGLE_AUTH_CLIENT_SECRET: z.string().optional().default(''),
+  GOOGLE_CALLBACK_URL: z.string().optional().default(''),
 });
 
 // Parse and validate process.env

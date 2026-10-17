@@ -82,6 +82,9 @@ spec:
             # Loads non-sensitive settings (PORT, NEXT_PUBLIC_API_URL, etc.)
             - configMapRef:
                 name: {{ include "ascend.fullname" . }}-web-config
+            # Loads secrets (NEXT_PUBLIC_VAPID_PUBLIC_KEY, NEXT_PUBLIC_API_URL, etc.)
+            - secretRef:
+                name: {{ include "ascend.secretName" . }}
           livenessProbe:
             httpGet:
               path: {{ .Values.web.probes.liveness.path }}
