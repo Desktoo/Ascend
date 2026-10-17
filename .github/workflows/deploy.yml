@@ -43,6 +43,8 @@ jobs:
             desktooondocker/ascend-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & Push Web Image
         uses: docker/build-push-action@v5
@@ -58,6 +60,8 @@ jobs:
             desktooondocker/ascend-web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
   deploy-helm:
     name: Deploy to GKE via Helm
