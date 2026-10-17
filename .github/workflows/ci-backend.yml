@@ -32,7 +32,34 @@ jobs:
     name: Backend Lint, Test & Build
     runs-on: ubuntu-latest
     env:
+      NODE_ENV: "test"
+      PORT: "3000"
       DATABASE_URL: "postgresql://ci_user:ci_pass@localhost:5432/ci_test"
+      MONGODB_URI: "mongodb://localhost:27017/ci_test"
+      UPSTASH_REDIS_URL: "redis://localhost:6379"
+      QUEUE_REDIS_URL: "redis://localhost:6379"
+      JWT_ACCESS_SECRET: "ci_jwt_access_secret_dummy_value_for_tests"
+      JWT_REFRESH_SECRET: "ci_jwt_refresh_secret_dummy_value_for_tests"
+      BCRYPT_SECRET_PEPPER: "ci_bcrypt_secret_pepper_dummy_value"
+      AWS_REGION: "us-east-1"
+      AWS_IAM_ACCESS_KEY: "ci_aws_access_key"
+      AWS_IAM_SECRET_ACCESS_KEY: "ci_aws_secret_access_key"
+      OCI_PRIVATE_KEY: "dGVzdC1wcml2YXRlLWtleQ=="
+      OCI_TENANCY: "ocid1.tenancy.oc1..ci_test"
+      OCI_USER: "ocid1.user.oc1..ci_test"
+      OCI_FINGERPRINT: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+      OCI_REGION: "us-ashburn-1"
+      OCI_NAMESPACE: "ci_namespace"
+      OCI_BUCKET_NAME: "ci-bucket"
+      VAPID_PUBLIC_KEY: "ci_vapid_public_key"
+      VAPID_PRIVATE_KEY: "ci_vapid_private_key"
+      RESEND_API: "re_ci_resend_api_key"
+      GH_AUTH_CLIENT_ID: "ci_gh_client_id"
+      GH_AUTH_CLIENT_SECRET: "ci_gh_client_secret"
+      GH_CALLBACK_URL: "http://localhost:3000/auth/github/callback"
+      GOOGLE_AUTH_CLIENT_ID: "ci_google_client_id"
+      GOOGLE_AUTH_CLIENT_SECRET: "ci_google_client_secret"
+      GOOGLE_CALLBACK_URL: "http://localhost:3000/auth/google/callback"
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
