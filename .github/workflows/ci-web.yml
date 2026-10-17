@@ -10,6 +10,7 @@ on:
       - "pnpm-lock.yaml"
       - "package.json"
       - "turbo.json"
+      - ".github/workflows/ci-web.yml"
   push:
     branches: [main]
     paths:
@@ -19,6 +20,7 @@ on:
       - "pnpm-lock.yaml"
       - "package.json"
       - "turbo.json"
+      - ".github/workflows/ci-web.yml"
   workflow_dispatch:
 
 concurrency:

@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "helm/**"
+      - ".github/workflows/ci-helm.yml"
   push:
     branches: [main]
     paths:
       - "helm/**"
+      - ".github/workflows/ci-helm.yml"
   workflow_dispatch:
 
 concurrency:

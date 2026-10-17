@@ -11,6 +11,7 @@ on:
       - "pnpm-lock.yaml"
       - "package.json"
       - "turbo.json"
+      - ".github/workflows/ci-backend.yml"
   push:
     branches: [main]
     paths:
@@ -21,6 +22,7 @@ on:
       - "pnpm-lock.yaml"
       - "package.json"
       - "turbo.json"
+      - ".github/workflows/ci-backend.yml"
   workflow_dispatch:
 
 concurrency:
