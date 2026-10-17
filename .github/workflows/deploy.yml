@@ -63,18 +63,18 @@ jobs:
     name: Deploy to GKE via Helm
     needs: build-and-push
     runs-on: ubuntu-latest
-    # Only runs Helm deployment if GCP_SA_KEY secret is present
-    if: ${{ env.HAVE_GCP_SECRET != '' }}
-    env:
-      HAVE_GCP_SECRET: ${{ secrets.GCP_SA_KEY }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud via OIDC
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Connect to GKE Cluster
         uses: google-github-actions/get-gke-credentials@v2
