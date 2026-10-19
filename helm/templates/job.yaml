@@ -7,8 +7,8 @@ metadata:
     {{- include "ascend.labels" . | nindent 4 }}
     app.kubernetes.io/component: migration
   annotations:
-    # Runs before any deployments are created or upgraded
-    "helm.sh/hook": pre-install,pre-upgrade
+    # Runs after ConfigMaps and SealedSecrets are installed/upgraded
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "1"
     # Deletes any previous completed/failed migration job before creating a new one
     "helm.sh/hook-delete-policy": before-hook-creation
