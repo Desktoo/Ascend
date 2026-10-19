@@ -1,18 +1,40 @@
 {{- if .Values.ingress.enabled -}}
+{{- if and .Values.ingress.managedCertificate .Values.ingress.managedCertificate.enabled -}}
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ .Values.ingress.managedCertificate.name | default (printf "%s-managed-cert" (include "ascend.fullname" .)) }}
+  labels:
+    {{- include "ascend.labels" . | nindent 4 }}
+spec:
+  domains:
+    - {{ .Values.ingress.webHost | quote }}
+    - {{ .Values.ingress.backendHost | quote }}
+---
+{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "ascend.fullname" . }}-ingress
   labels:
     {{- include "ascend.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
+    {{- if and .Values.ingress.managedCertificate .Values.ingress.managedCertificate.enabled }}
+    networking.gke.io/managed-certificates: {{ .Values.ingress.managedCertificate.name | default (printf "%s-managed-cert" (include "ascend.fullname" .)) | quote }}
+    {{- end }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
+  # Default backend serves the Web UI when accessing the Load Balancer IP directly
+  defaultBackend:
+    service:
+      name: {{ include "ascend.fullname" . }}-web
+      port:
+        number: {{ .Values.web.service.port }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
@@ -44,3 +66,4 @@ spec:
                 port:
                   number: {{ .Values.backend.service.port }}
 {{- end }}
+
