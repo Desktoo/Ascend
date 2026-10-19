@@ -16,8 +16,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-push:
-    name: Build & Push Docker Images
+  # ----------------------------------------------------------------------------
+  # 1. Detect which parts of the monorepo changed (takes ~3 seconds)
+  # ----------------------------------------------------------------------------
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check Changed Paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+              - 'packages/core/db/**'
+              - 'packages/typescript-config/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+              - 'turbo.json'
+            web:
+              - 'apps/web/**'
+              - 'packages/core/ui/**'
+              - 'packages/eslint-config/**'
+              - 'packages/typescript-config/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+              - 'turbo.json'
+
+  # ----------------------------------------------------------------------------
+  # 2a. Build & Push Backend (Only runs if backend files changed)
+  # ----------------------------------------------------------------------------
+  build-backend:
+    name: Build & Push Backend Image
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -41,8 +80,29 @@ jobs:
           tags: |
             desktooondocker/ascend-backend:latest
             desktooondocker/ascend-backend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+  # ----------------------------------------------------------------------------
+  # 2b. Build & Push Web (Only runs if web files changed, in parallel with backend)
+  # ----------------------------------------------------------------------------
+  build-web:
+    name: Build & Push Web Image
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build & Push Web Image
         uses: docker/build-push-action@v5
@@ -56,13 +116,20 @@ jobs:
           tags: |
             desktooondocker/ascend-web:latest
             desktooondocker/ascend-web:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
+  # ----------------------------------------------------------------------------
+  # 3. Deploy to GKE via Helm (Runs even when Docker builds are skipped!)
+  # ----------------------------------------------------------------------------
   deploy-helm:
     name: Deploy to GKE via Helm
-    needs: build-and-push
+    needs: [detect-changes, build-backend, build-web]
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') &&
+      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -90,11 +157,19 @@ jobs:
 
       - name: Deploy Ascend via Helm
         run: |
+          # Wait if 'prod' namespace is still terminating from a previous release cleanup
+          while kubectl get namespace prod -o jsonpath='{.status.phase}' 2>/dev/null | grep -q "Terminating"; do
+            echo "Waiting for namespace 'prod' to finish terminating..."
+            sleep 3
+          done
+
+          BACKEND_TAG="${{ needs.detect-changes.outputs.backend == 'true' && github.sha || 'latest' }}"
+          WEB_TAG="${{ needs.detect-changes.outputs.web == 'true' && github.sha || 'latest' }}"
+
           helm upgrade --install ascend-prod ./helm \
             -f ./helm/values-prod.yaml \
             --namespace prod \
             --create-namespace \
-            --set backend.image.tag="${{ github.sha }}" \
-            --set web.image.tag="${{ github.sha }}" \
-            --set migration.image.tag="${{ github.sha }}"
-
+            --set backend.image.tag="${BACKEND_TAG}" \
+            --set web.image.tag="${WEB_TAG}" \
+            --set migration.image.tag="${BACKEND_TAG}"
