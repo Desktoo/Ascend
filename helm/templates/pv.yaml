@@ -1,4 +1,4 @@
-{{- if .Values.persistence.bullmq.enabled -}}
+{{- if and .Values.persistence.bullmq.enabled (eq (.Values.persistence.bullmq.storageClassName | default "standard-rwo") "manual") -}}
 # ==============================================================================
 # PersistentVolume (PV) for existing GCP Persistent Disk
 # ==============================================================================

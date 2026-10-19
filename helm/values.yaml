@@ -59,13 +59,13 @@ backend:
   # Health checking probes
   probes:
     liveness:
-      path: /health
+      path: /
       port: 3000
       initialDelaySeconds: 20
       periodSeconds: 15
       failureThreshold: 3
     readiness:
-      path: /health
+      path: /
       port: 3000
       initialDelaySeconds: 10
       periodSeconds: 10
@@ -185,10 +185,10 @@ persistence:
     # "projects/<PROJECT_ID>/zones/<ZONE>/disks/ascend-bullmq-store-disk"
     pvName: "ascend-bullmq-store-pv"
     pvcName: "ascend-bullmq-store-pvc"
-    capacity: "10Gi"              # Size matching your GCP disk
-    storageClassName: "manual"    # Uses static binding to prevent dynamic disk creation
+    capacity: "10Gi"              # Size of the dynamically provisioned disk
+    storageClassName: "standard-rwo" # GKE Autopilot default dynamic storage class
     accessMode: "ReadWriteOnce"
-    reclaimPolicy: "Retain"       # Keeps data intact in GCP even if PV/PVC is deleted
+    reclaimPolicy: "Retain"       # Used only when storageClassName is "manual"
     fsType: "ext4"
 
 # ------------------------------------------------------------------------------

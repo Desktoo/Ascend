@@ -9,7 +9,7 @@ import { env } from '../../config/env';
     BullModule.forRoot({
       connection: {
         url: env.QUEUE_REDIS_URL,
-        tls: env.NODE_ENV === 'production' ? {} : undefined,
+        tls: env.QUEUE_REDIS_URL.startsWith('rediss://') ? {} : undefined,
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
         keepAlive: 30000,

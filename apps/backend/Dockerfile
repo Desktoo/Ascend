@@ -31,6 +31,7 @@ WORKDIR /monorepo
 ENV NODE_ENV=production
 ENV PORT=3000
 
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN addgroup --system --gid 1001 nodejs-permission-group
 RUN adduser --system --uid 1001 non-root-user
 COPY --from=builder --chown=non-root-user:nodejs-permission-group /monorepo/apps/backend/dist ./apps/backend/dist

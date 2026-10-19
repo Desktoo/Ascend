@@ -14,9 +14,11 @@ metadata:
 spec:
   accessModes:
     - {{ .Values.persistence.bullmq.accessMode | default "ReadWriteOnce" }}
-  storageClassName: {{ .Values.persistence.bullmq.storageClassName | default "manual" | quote }}
+  storageClassName: {{ .Values.persistence.bullmq.storageClassName | default "standard-rwo" | quote }}
+  {{- if eq (.Values.persistence.bullmq.storageClassName | default "standard-rwo") "manual" }}
   # Statically bind directly to the PersistentVolume defined in pv.yaml
   volumeName: {{ .Values.persistence.bullmq.pvName | default "ascend-bullmq-store-pv" }}
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.persistence.bullmq.capacity | default "10Gi" }}
