@@ -11,9 +11,9 @@ global:
   environment: staging
   appName: ascend
 
-# Namespace setup for Staging
+# Namespace setup for Staging (created via --namespace staging --create-namespace)
 namespace:
-  create: true
+  create: false
   name: staging
 
 # ------------------------------------------------------------------------------

@@ -11,9 +11,9 @@ global:
   environment: production
   appName: ascend
 
-# Namespace setup for Production
+# Namespace setup for Production (created via --namespace prod --create-namespace)
 namespace:
-  create: true
+  create: false
   name: prod
 
 # ------------------------------------------------------------------------------
