@@ -1,3 +1,8 @@
+const apiOrigin =
+  process.env.NODE_ENV === "production"
+    ? "https://api.ascendup.online"
+    : "http://localhost:3000";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -13,11 +18,11 @@ const nextConfig = {
     return [
       {
         source: "/auth/:path*",
-        destination: "http://localhost:3000/auth/:path*",
+        destination: `${apiOrigin}/auth/:path*`,
       },
       {
         source: "/health/:path*",
-        destination: "http://localhost:3000/health/:path*",
+        destination: `${apiOrigin}/health/:path*`,
       },
     ];
   },

@@ -166,8 +166,9 @@ ingress:
     # Uncomment once you reserve a static IP via: gcloud compute addresses create ascend-prod-ip --global
     # kubernetes.io/ingress.global-static-ip-name: "ascend-prod-ip"
   # Host domains
-  webHost: "app.ascend.example.com"
-  backendHost: "api.ascend.example.com"
+  rootHost: "ascendup.online"
+  webHost: "app.ascendup.online"
+  backendHost: "api.ascendup.online"
   # Google-managed SSL Certificate (enable once real domains point to Load Balancer IP)
   managedCertificate:
     enabled: false

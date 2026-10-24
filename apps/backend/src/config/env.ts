@@ -51,4 +51,26 @@ const envSchema = z.object({
 
 // Parse and validate process.env
 // We cast it so the types flow through securely
-export const env = envSchema.parse(process.env);
+const parsedEnv = envSchema.parse(process.env);
+const isProduction = parsedEnv.NODE_ENV === 'production';
+
+export const env = {
+  ...parsedEnv,
+  isProduction,
+  FRONTEND_URL: isProduction
+    ? 'https://ascendup.online'
+    : 'http://localhost:3001',
+  COOKIE_DOMAIN: isProduction ? '.ascendup.online' : undefined,
+  GOOGLE_CALLBACK_URL: isProduction
+    ? 'https://api.ascendup.online/auth/callback/google'
+    : parsedEnv.GOOGLE_CALLBACK_URL ||
+      'http://localhost:3000/auth/callback/google',
+  GITHUB_CALLBACK_URL: isProduction
+    ? 'https://api.ascendup.online/auth/callback/github'
+    : parsedEnv.GITHUB_CALLBACK_URL ||
+      'http://localhost:3000/auth/callback/github',
+  GH_CALLBACK_URL: isProduction
+    ? 'https://api.ascendup.online/auth/callback/github'
+    : parsedEnv.GH_CALLBACK_URL ||
+      'http://localhost:3000/auth/callback/github',
+};

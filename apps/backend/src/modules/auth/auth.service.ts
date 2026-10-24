@@ -102,14 +102,18 @@ export class AuthService {
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: env.NODE_ENV === 'production',
+      secure: env.isProduction,
+      domain: env.COOKIE_DOMAIN,
+      path: '/',
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
-      secure: env.NODE_ENV === 'production',
+      secure: env.isProduction,
+      domain: env.COOKIE_DOMAIN,
+      path: '/',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -132,7 +136,7 @@ export class AuthService {
     await this.redisService.set(redisKey, user.id, 300);
 
     // 5. Build your Next.js application endpoint address URL
-    const resetLink = `http://localhost:3001/reset-password?token=${resetToken}`;
+    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
     // 6. Send the transactional email securely via Resend
     try {
@@ -290,7 +294,9 @@ export class AuthService {
       res.cookie('access_token', newAccessToken, {
         httpOnly: true,
         sameSite: 'lax',
-        // secure: env.NODE_ENV === 'production',
+        secure: env.isProduction,
+        domain: env.COOKIE_DOMAIN,
+        path: '/',
         maxAge: 15 * 60 * 1000,
       });
 
@@ -326,7 +332,8 @@ export class AuthService {
     const cookieOptions = {
       httpOnly: true,
       // TODO:
-      // secure: isProduction,
+      secure: env.isProduction,
+      domain: env.COOKIE_DOMAIN,
       sameSite: 'lax' as const,
       path: '/',
       expires: new Date(0),

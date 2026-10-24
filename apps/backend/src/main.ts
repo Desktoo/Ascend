@@ -24,7 +24,9 @@ async function bootstrap() {
   console.log(mermaidEdges.join('\n'));
 
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: env.isProduction
+      ? ['https://ascendup.online', 'https://app.ascendup.online']
+      : 'http://localhost:3001',
     credentials: true,
   });
 

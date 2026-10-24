@@ -8,6 +8,9 @@ metadata:
     {{- include "ascend.labels" . | nindent 4 }}
 spec:
   domains:
+    {{- if .Values.ingress.rootHost }}
+    - {{ .Values.ingress.rootHost | quote }}
+    {{- end }}
     - {{ .Values.ingress.webHost | quote }}
     - {{ .Values.ingress.backendHost | quote }}
 ---
@@ -38,12 +41,28 @@ spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
+        {{- if .Values.ingress.rootHost }}
+        - {{ .Values.ingress.rootHost | quote }}
+        {{- end }}
         - {{ .Values.ingress.webHost | quote }}
         - {{ .Values.ingress.backendHost | quote }}
       secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
-    # Web UI traffic (e.g., app.ascend.example.com) -> Web Service
+    {{- if .Values.ingress.rootHost }}
+    # Root domain UI traffic (ascendup.online) -> Web Service
+    - host: {{ .Values.ingress.rootHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ascend.fullname" . }}-web
+                port:
+                  number: {{ .Values.web.service.port }}
+    {{- end }}
+    # Web UI traffic (app.ascendup.online) -> Web Service
     - host: {{ .Values.ingress.webHost | quote }}
       http:
         paths:
@@ -54,7 +73,7 @@ spec:
                 name: {{ include "ascend.fullname" . }}-web
                 port:
                   number: {{ .Values.web.service.port }}
-    # API traffic (e.g., api.ascend.example.com) -> Backend Service
+    # API traffic (api.ascendup.online) -> Backend Service
     - host: {{ .Values.ingress.backendHost | quote }}
       http:
         paths:
@@ -66,4 +85,3 @@ spec:
                 port:
                   number: {{ .Values.backend.service.port }}
 {{- end }}
-

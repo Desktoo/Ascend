@@ -110,7 +110,7 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           build-args: |
-            NEXT_PUBLIC_API_URL=https://api.ascend.example.com
+            NEXT_PUBLIC_API_URL=https://api.ascendup.online
             NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '' }}
           push: true
           tags: |

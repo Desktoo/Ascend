@@ -105,7 +105,7 @@ secrets:
 
 
 # ------------------------------------------------------------------------------
-# 5. Ingress (GKE Built-in HTTP/S Load Balancer + Google Managed SSL)
+# 5. Ingress (GKE Built-in HTTP/S Load Balancer + cert-manager TLS)
 # ------------------------------------------------------------------------------
 ingress:
   enabled: true
@@ -114,14 +114,14 @@ ingress:
     kubernetes.io/ingress.class: "gce"
     # Uncomment once you reserve a static IP via: gcloud compute addresses create ascend-prod-ip --global
     # kubernetes.io/ingress.global-static-ip-name: "ascend-prod-ip"
-  webHost: "app.ascend.example.com"
-  backendHost: "api.ascend.example.com"
-  # Set enabled: true once webHost & backendHost are real domains pointing to the Load Balancer IP
+  rootHost: "ascendup.online"
+  webHost: "app.ascendup.online"
+  backendHost: "api.ascendup.online"
   managedCertificate:
     enabled: false
     name: "ascend-prod-managed-cert"
   tls:
-    enabled: false
+    enabled: true
     secretName: "ascend-prod-tls-cert"
 
 # ------------------------------------------------------------------------------
@@ -165,5 +165,3 @@ redis:
     requests:
       cpu: 100m
       memory: 128Mi
-
-

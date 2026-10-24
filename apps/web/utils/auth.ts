@@ -1,14 +1,13 @@
 import { apiClient } from "@/core/services/client";
+import { env } from "@/core/config/env";
 
 /**
  * Triggers an OAuth login pipeline by forcing a full browser redirect 
  * to your NestJS backend endpoint.
-*/
-const apiBaseUrl = 'http://localhost:3000';
+ */
+const apiBaseUrl = env.NEXT_PUBLIC_API_URL;
 
 export function signIn(provider: 'google' | 'github') {
-  // Pull your API base URL from env variables (e.g., http://localhost:3000 or production api)
-  
   // Directly point the browser window to your NestJS auth gate route
   window.location.href = `${apiBaseUrl}/auth/${provider}`;
 }
