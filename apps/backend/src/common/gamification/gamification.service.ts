@@ -1,8 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisCacheService } from '../redis-cache/redis-cache.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { RankThemeType } from './constants/rankThemes';
 import { calculateXpProgression } from './constants/calculateXpProgression';
 import { getXpRequiredForNextLevel } from './constants/xpCalculator';
@@ -12,8 +11,10 @@ import { GamificationCacheRepository } from './repos/gamification-cache.repo';
 import { UserRankUpEvent } from '../events/user-rank-up.event';
 
 @Injectable()
-export class GamificationService {
+export class GamificationService implements OnModuleDestroy {
   private readonly logger = new Logger(GamificationService.name);
+  private flushTimer: NodeJS.Timeout | null = null;
+  private readonly FLUSH_DELAY_MS = 10_000;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -21,6 +22,29 @@ export class GamificationService {
     private readonly gamificationCache: GamificationCacheRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+      await this.syncRedisToDatabase();
+    }
+  }
+
+  /**
+   * Schedules a single debounced flush 10 seconds after XP is gained.
+   * Multiple XP gains within the 10-second window piggyback on the same timer.
+   */
+  private scheduleFlush(): void {
+    if (this.flushTimer) return;
+
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = null;
+      void this.syncRedisToDatabase();
+    }, this.FLUSH_DELAY_MS);
+
+    this.flushTimer.unref?.();
+  }
 
   /**
    * Safe entry-point to award XP.
@@ -88,15 +112,15 @@ export class GamificationService {
       );
     }
 
-    // 5. Flag the user as needing a database sync
+    // 5. Flag the user as needing a database sync & schedule debounced flush
     await this.gamificationCache.markUserAsDirty(userId);
+    this.scheduleFlush();
   }
 
   /**
    * Async Write-Behind Sync Engine
-   * Flushes Redis data to permanent storage every 10 seconds.
+   * Flushes Redis data to permanent storage 10 seconds after XP activity.
    */
-  @Cron(CronExpression.EVERY_10_SECONDS)
   async syncRedisToDatabase() {
     const lockKey = 'locks:user-db-sync';
     const lockDuration = 8000;
@@ -193,6 +217,7 @@ export class GamificationService {
         'Database batch sync failed, changes safely rolled back',
         error,
       );
+      this.scheduleFlush();
     } finally {
       // 3. The lock is now GUARANTEED to release cleanly regardless of where the routine exits
       if (lock) {

@@ -173,3 +173,5 @@ jobs:
             --set backend.image.tag="${BACKEND_TAG}" \
             --set web.image.tag="${WEB_TAG}" \
             --set migration.image.tag="${BACKEND_TAG}"
+
+          kubectl rollout restart deployment/ascend-prod-ascend-charts-backend deployment/ascend-prod-ascend-charts-web -n prod

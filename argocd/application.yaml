@@ -17,9 +17,6 @@ spec:
     server: https://kubernetes.default.svc
     namespace: prod
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - RespectIgnoreDifferences=true
@@ -28,3 +25,4 @@ spec:
       kind: Deployment
       jsonPointers:
         - /spec/replicas
+        - /spec/template/spec/containers/0/image
